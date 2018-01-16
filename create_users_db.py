@@ -53,15 +53,15 @@ def create_db():
                     VALUES ('{}','{}')
                     '''.format(initial_user_names[i], initial_user_passwords[i])
 
-            print sql_cmd
+            print (sql_cmd)
             cur.execute(sql_cmd)
 
         # Print the data
         cur.execute('SELECT * FROM Users LIMIT 10')
         rows = cur.fetchall()
         for row in rows:
-            print 'user_id: {}, user_name: {}, user_password: {}'.format(row['user_id'], row['user_name'],
-                                                                         row['user_password'])
+            print ('user_id: {}, user_name: {}, user_password: {}'.format(row['user_id'], row['user_name'],
+                                                                         row['user_password']))
 
     return
 

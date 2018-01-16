@@ -27,14 +27,14 @@ The default is port 5000 so to access the server open your browser to http://loc
 # then the user will be inserted into our mysql database. database name is proj_db, table is Users
 @application.route("/signUp",methods=['POST'])
 def signUp():
-    print 'signup!!!!'
+    print ('signup!!!!')
     try:
         json_data = request.json['info']
         userName = json_data['username']
         password = json_data['password']
 
-        print 'Will now add the following user to the DB'
-        print 'userName = {}, password = {}'.format(userName, password)
+        print ('Will now add the following user to the DB')
+        print ('userName = {}, password = {}'.format(userName, password))
 
         sql_cmd = '''
                 INSERT INTO Users (user_name, user_password)
@@ -46,8 +46,8 @@ def signUp():
             cur = con.cursor(mdb.cursors.DictCursor)
             cur.execute('USE proj_db')
 
-            print 'executing the following sql command:'
-            print sql_cmd
+            print ('executing the following sql command:')
+            print (sql_cmd)
 
             cur.execute(sql_cmd)
 
@@ -55,12 +55,12 @@ def signUp():
             cur.execute('SELECT * FROM Users LIMIT 30')
             rows = cur.fetchall()
             for row in rows:
-                print 'user_id: {}, user_name: {}, user_password: {}'.format(row['user_id'], row['user_name'],
-                                                                             row['user_password'])
+                print ('user_id: {}, user_name: {}, user_password: {}'.format(row['user_id'], row['user_name'],
+                                                                             row['user_password']))
 
         return jsonify(status='OK', message='User inserted successfully')
 
-    except Exception,e:
+    except Exception as e:
         return jsonify(status='ERROR',message=str(e))
 
 # ADAM: This is the main route, it show list.htm
@@ -81,18 +81,18 @@ def addMachine():
         password = json_data['password']
         portNumber = json_data['port']
 
-        print 'insert machine!!!'
+        print ('insert machine!!!')
 
         return jsonify(status='OK', message='inserted successfully')
 
-    except Exception, e:
+    except Exception as e:
         return jsonify(status='ERROR', message=str(e))
 
 
 @application.route('/getMachine', methods=['POST'])
 def getMachine():
     try:
-        print 'getMachine!!!'
+        print ('getMachine!!!')
         machineId = request.json['id']
         machineDetail = {
             'device': machine['device'],
@@ -103,14 +103,14 @@ def getMachine():
             'id': str(machine['_id'])
         }
         return json.dumps(machineDetail)
-    except Exception, e:
+    except Exception as e:
         return str(e)
 
 
 @application.route('/updateMachine', methods=['POST'])
 def updateMachine():
     try:
-        print "updateMachine!!!"
+        print ("updateMachine!!!")
         machineInfo = request.json['info']
         machineId = machineInfo['id']
         device = machineInfo['device']
@@ -120,7 +120,7 @@ def updateMachine():
         port = machineInfo['port']
 
         return jsonify(status='OK', message='updated successfully')
-    except Exception, e:
+    except Exception as e:
         return jsonify(status='ERROR', message=str(e))
 
 
@@ -128,11 +128,11 @@ def updateMachine():
 def getMachineList():
     try:
 
-        print 'getMachineList!!!'
+        print ('getMachineList!!!')
 
         machineList = []
 
-    except Exception, e:
+    except Exception as e:
         return str(e)
     return json.dumps(machineList)
 
@@ -140,7 +140,7 @@ def getMachineList():
 @application.route("/execute", methods=['POST'])
 def execute():
     try:
-        print 'execute!!!'
+        print ('execute!!!')
 
         machineInfo = request.json['info']
         ip = machineInfo['ip']
@@ -159,20 +159,20 @@ def execute():
                 resp = run(command)
 
         return jsonify(status='OK', message=resp)
-    except Exception, e:
-        print 'Error is ' + str(e)
+    except Exception as e:
+        print ('Error is ' + str(e))
         return jsonify(status='ERROR', message=str(e))
 
 
 @application.route("/deleteMachine", methods=['POST'])
 def deleteMachine():
     try:
-        print 'deleteMachine!!!'
+        print ('deleteMachine!!!')
 
         machineId = request.json['id']
 
         return jsonify(status='OK', message='deletion successful')
-    except Exception, e:
+    except Exception as e:
         return jsonify(status='ERROR', message=str(e))
 
 # ADAM: The main, takes the config from the config file and connects to the mysql server
