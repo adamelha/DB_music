@@ -6,7 +6,7 @@ ADAM:
 This file creates a simple mysql users database.
 IMPORTANT: Make sure that app_config/config.py is configured according to your mysql server credentials!
 
-The database created is called proj_db and will look like so:
+The database created is called DbMysql23 and will look like so:
 Table: Users:
     user_id     user_name    user_password
     1           admin        admin_pass
@@ -18,14 +18,14 @@ def create_db():
     initial_user_names = ['admin', 'user1', 'user2']
     initial_user_passwords = ['admin_pass', 'user1_pass', 'user2_pass']
 
-    con = mdb.connect('localhost', CONFIG['mysql']['user'], CONFIG['mysql']['pass'])
+    con = mdb.connect(CONFIG['mysql']['host'], CONFIG['mysql']['user'], CONFIG['mysql']['pass'])
 
     # Create the database
-    sql_cmd = 'CREATE DATABASE IF NOT EXISTS proj_db'
+    sql_cmd = 'CREATE DATABASE IF NOT EXISTS {}'.format(CONFIG['mysql']['database'])
     with con:
         cur = con.cursor(mdb.cursors.DictCursor)
         cur.execute(sql_cmd)
-        cur.execute('USE proj_db')
+        cur.execute('USE {}'.format(CONFIG['mysql']['database']))
 
         # Drop the table if it already exists - start from clean
         cur.execute("DROP TABLE IF EXISTS Users")

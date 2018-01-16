@@ -24,7 +24,7 @@ The default is port 5000 so to access the server open your browser to http://loc
 
 # ADAM: This was added by me
 # If you press the signup button a pop up will pop, after filling the form and pressing Sign Up!
-# then the user will be inserted into our mysql database. database name is proj_db, table is Users
+# then the user will be inserted into our mysql database. database name is determined by CONFIG['mysql']['database'], table is Users
 @application.route("/signUp",methods=['POST'])
 def signUp():
     print ('signup!!!!')
@@ -44,7 +44,7 @@ def signUp():
 
         with con:
             cur = con.cursor(mdb.cursors.DictCursor)
-            cur.execute('USE proj_db')
+            cur.execute('USE {}'.format(CONFIG['mysql']['database']))
 
             print ('executing the following sql command:')
             print (sql_cmd)
@@ -178,6 +178,6 @@ def deleteMachine():
 # ADAM: The main, takes the config from the config file and connects to the mysql server
 # Then runs the server
 if __name__ == "__main__":
-    con = mdb.connect('localhost', CONFIG['mysql']['user'], CONFIG['mysql']['pass'])
+    con = mdb.connect(CONFIG['mysql']['host'], CONFIG['mysql']['user'], CONFIG['mysql']['pass'])
     application.run(host='0.0.0.0')
 
