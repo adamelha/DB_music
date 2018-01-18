@@ -1,0 +1,113 @@
+.smart-table {
+  .transcludedButtons {
+    width: 100%;
+  }
+  .panel.with-scroll {
+    .panel-body {
+      overflow-y: visible;
+
+    }
+  }
+
+  .horizontal-scroll {
+    overflow-x: visible;
+  }
+  .add-row-editable-table {
+    padding: 10px;
+    display: flex;
+    .ddlFunctions {
+      display: inline-flex;
+    }
+  }
+
+  .table > thead > tr > th:first-child {
+    text-align: inherit;
+  }
+
+  .table > tbody > tr > {
+    td:first-child {
+      > div {
+        padding: 0 3px;
+      }
+      text-align: inherit;
+    }
+    .firstChild {
+      text-align: center !important;
+    }
+  }
+  .buttonList {
+    display: inline-block;
+  }
+
+  .setOfFunctions {
+    width: 900px;
+  }
+
+  .st-row {
+    cursor: pointer;
+  }
+
+  .columnTitle {
+    > th {
+      font-weight: bold;
+    }
+    .headerField {
+      position: relative;
+      .tabName {
+        position: relative;
+        .fieldFilter {
+          z-index: 20;
+
+          position: absolute;
+          top: -30px;
+          width: 30px;
+          height: 30px;
+          left: -15px;
+          outline: 0;
+
+          .fa-filter{
+            outline: 0;
+          }
+        }
+      }
+
+      .filterWrapper {
+        position: absolute;
+        bottom: 0;
+        width: 90%;
+        left: 5px;
+        top: -23px;
+        > div {
+          > i {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+          }
+
+        }
+        .dateWrapper {
+          display: flex;
+          position: absolute;
+          border: 1px solid rgba(0, 0, 0, 0.12);
+          border-radius: 5px;
+          padding: 5px;
+          z-index: 21;
+          top: -40px;
+          .date {
+            height: auto;
+            border: 0;
+            padding: 2px;
+          }
+        }
+
+      }
+
+    }
+
+  }
+  .table-data {
+    opacity: 0.7;
+  }
+}
+
+

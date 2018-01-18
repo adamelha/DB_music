@@ -1,0 +1,137 @@
+<div class="row smart-table" ng-init="init()">
+    <div class="col-md-12">
+        <div ba-panel ba-panel-title="{{panelTitle}}" ba-panel-class="with-scroll">
+            <div ng-if="isButtonsTranscludePresent()" class="add-row-editable-table">
+                <ng-transclude class="transcludedButtons" ng-transclude-slot="buttons"></ng-transclude>
+                <div class="setOfFunctions">
+                    <generic-form fields="setOfFunctionsFields"></generic-form>
+                    <generic-form fields="setOfFiltersFields"></generic-form>
+                </div>
+            </div>
+            <div class="horizontal-scroll">
+                <div class="form-group select-page-size-wrap">
+                    <label>Items Per Page
+                        <select class="form-control selectpicker show-tick" title="Items Per Page" selectpicker
+                                ng-model="tableState.pageSize" ng-options="i for i in [1,5,10,15,20,25]">
+                        </select>
+                    </label>
+                </div>
+                <table st-pipe="getDataFromServer" class="table" st-table="tableState.items">
+                    <thead>
+                    <tr class="sortable columnTitle">
+                        <th ng-if="setOfFunctionsFields"></th>
+                        <th ng-if="leftColumn">{{leftColumn.name}}</th>
+
+                        <th ng-repeat="field in fields | filter: hiddenFilter" st-skip-natural="true" st-sort="{{field.name}}"
+                            ng-if="!field.isHidden" class="headerField">
+                            <span class="tabName">{{field.alias}}<span class="fieldFilter"
+                                                                       ng-click="toggleFieldFilter(field,$event)"><i
+                                    class="fa fa-filter" aria-hidden="true"></i></span></span>
+
+                            <div ng-click="stopProp($event)" ng-show="field.filter.open" ng-switch="field.type"
+                                 class="filterWrapper">
+                                <div ng-switch-when="select|boolean" ng-switch-when-separator="|">
+                                    <div class="">
+                                        <ui-select ng-model="field.filter.value"
+                                                   class="btn-group bootstrap-select form-control"
+                                                   ng-change="getDataFromServer(tableCtrl,null,field)"
+                                                   append-to-body="false"
+                                                   search-enabled="false"
+                                                   name="{{field.name}}">
+                                            <ui-select-match
+                                                    placeholder="{{field.filter.placeholder || 'Select Option'}} ">
+                                                <span> {{$select.selected.value}}</span>
+                                            </ui-select-match>
+                                            <ui-select-choices ng-hide="!$select.open"
+                                                               repeat="option.key as option in (field.type=='boolean'? booleanFilterOptions: field.filter.options) | filter: $select.search">
+                                                <span ng-bind-html="option.value"></span>
+                                            </ui-select-choices>
+                                        </ui-select>
+                                    </div>
+                                </div>
+
+                                <div class="dateWrapper" ng-switch-when="date">
+                                    <div><div>From :</div><bb-datepicker  min-date="minDate" hide-time="true" class="date form-control" date-time="field.filter.value.from"></bb-datepicker></div>
+                                    <div><div>To:</div><bb-datepicker hide-time="true" class="date form-control" date-time="field.filter.value.to"></bb-datepicker></div>
+
+                                    <div><i class="fa fa-search" ng-click="getDataFromServer(tableCtrl,null,field)"></i></div>
+
+                                </div>
+                                <div ng-switch-default>
+                                    <input ng-model="field.filter.value"
+                                           name="{{field.name}}"
+                                           type="{{(field.type == 'integer' || field.type == 'number') ? 'number' : (field.type ? field.type : 'text')}}"
+                                           class="form-control"
+                                           ng-required="field._required"
+                                           ng-class="{'input-disabled':!field.editable}">
+
+                                    <i class="fa fa-search" ng-click="getDataFromServer(tableCtrl,null,field)"></i>
+                                </div>
+                            </div>
+                        </th>
+                    </tr>
+                    <tr ng-if="searchGlobal">
+                        <th colspan="6"><input st-search="" class="form-control" placeholder="Search..." type="text"/>
+                        </th>
+                    </tr>
+                    <tr ng-if="searchEnable">
+                        <th ng-if="setOfFunctionsFields"></th>
+                        <th ng-if="leftColumn"></th>
+                        <th ng-repeat="field in fields | filter: hiddenFilter">
+                            <input st-search="{{field.name}}" placeholder="Search {{field.alias}}"
+                                   class="input-sm form-control search-input" type="search"/>
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody ng-show="tableState.isLoading">
+                    <tr>
+                        <td colspan="4" class="text-center">Loading ...</td>
+                    </tr>
+                    </tbody>
+
+                    <tbody ng-show="!tableState.isLoading">
+
+                    <tr class="table-data" ng-class="rowButton ? 'st-row': ''"
+                        ng-repeat="item in tableState.items | filter: setOfFiltersFields.currentFilter(item) ">
+                        <td ng-if="setOfFunctionsFields">
+                            <label class="checkbox-inline custom-checkbox nowrap">
+                                <input ng-click="addCheckedItemToList(item.id)" ng-model="options.closeButton"
+                                       type="checkbox" id="closeButton">
+                                <span></span>
+                            </label>
+                        </td>
+                        <td ng-if="leftColumn.name">
+                            <div ng-if="btn.isShownOnRow(item)" class="buttonList" ng-repeat="btn in leftColumn.buttons"
+                                 ng-click="btn.onClick(item,$parent.$parent.$index)">
+                                <i ng-class="btn.icon" aria-hidden="true"></i>
+                            </div>
+                        </td>
+                        <td ng-if="!isColumnEditable($index)" ng-click="rowButtonClicked(item)"
+                            ng-class="{'firstChild': !$index && item.parent}"
+                            ng-repeat="field in fields | filter: hiddenFilter">{{getFieldValue(item,field)}}
+                        </td>
+                        <td ng-if="isColumnEditable($index)" ng-click="rowButtonClicked(item)"
+                            ng-repeat="field in fields | filter: hiddenFilter">
+                            <span editable-text="getFieldValue" blur="cancel">{{getFieldValue(item,field)}}</span>
+                        </td>
+                        <td ng-if="rightColumn.name">
+                            <div ng-if="btn.isShownOnRow(item)" class="buttonList"
+                                 ng-repeat="btn in rightColumn.buttons"
+                                 ng-click="btn.onClick(item,$parent.$parent.$index)">
+                                <i ng-class="btn.icon" aria-hidden="true"></i>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                    <tfoot ng-if="tableState.pageSize">
+                    <tr>
+                        <td colspan="5" class="text-center">
+                            <div st-pagination="" st-items-by-page="tableState.pageSize" st-displayed-pages="7"></div>
+                        </td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
