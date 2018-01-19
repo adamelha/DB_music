@@ -41,10 +41,6 @@ def create_db():
                     CHECK (user_id>0)
                     )
                     '''
-        sql_cmd_foo = '''CREATE TABLE foo (
-       bar VARCHAR(50) DEFAULT NULL
-       ) ENGINE=MyISAM DEFAULT CHARSET=latin1
-       '''
         cur.execute(sql_cmd)
 
         # Populate the Users table
@@ -73,7 +69,7 @@ def create_artists_table():
 
     with con:
         cur = con.cursor(mdb.cursors.DictCursor)
-        cur.execute('USE proj_db')
+        cur.execute('USE {}'.format(CONFIG['mysql']['database']))
 
         # Drop the table if it already exists - start from clean
         cur.execute("DROP TABLE IF EXISTS Artists")
@@ -115,7 +111,7 @@ def create_albums_table():
                     use_unicode = True, charset = 'utf8')
     with con:
         cur = con.cursor(mdb.cursors.DictCursor)
-        cur.execute('USE proj_db')
+        cur.execute('USE {}'.format(CONFIG['mysql']['database']))
 
         # Drop the table if it already exists - start from clean
         cur.execute("DROP TABLE IF EXISTS Albums")
@@ -162,7 +158,7 @@ def create_tracks_table():
                     use_unicode = True, charset = 'utf8')
     with con:
         cur = con.cursor(mdb.cursors.DictCursor)
-        cur.execute('USE proj_db')
+        cur.execute('USE {}'.format(CONFIG['mysql']['database']))
 
         # Drop the table if it already exists - start from clean
         cur.execute("DROP TABLE IF EXISTS Tracks")

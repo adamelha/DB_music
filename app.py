@@ -99,7 +99,6 @@ def getTrackList():
         
         with con:
             cur = con.cursor(mdb.cursors.DictCursor)
-            cur.execute('USE proj_db')
 
             print ('executing the following sql command:')
             print (sql_cmd)
