@@ -29,7 +29,7 @@
                 // languageId: '=',
                 tableConfig: '=' // {path,options,postProcess,fields,languageId} - path for call, options: same as rest-service, postProcess is a function that is called on results from server
             },
-            controller: function ($scope, $transclude, editableOptions, editableThemes, utilService, $timeout, restService) {
+            controller: function ($scope, $transclude, editableOptions, editableThemes,  $timeout) {
                 $scope.tableState = {
                     items: [],
                     pageSize: 10,
@@ -96,7 +96,7 @@
                     }
 
                     let retVal;
-                    let val = utilService.getFieldByPath(item, field.name);
+                    let val = $scope.getFieldByPath(item, field.name);
                     switch (field.type) {
                         case 'multiSelect':
                             retVal = val ? val.map(val => field.options.filter(option => option.key == val)[0].value).join(', ') : '';

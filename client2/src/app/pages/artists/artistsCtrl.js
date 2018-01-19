@@ -751,7 +751,7 @@
 
       $scope.tableConfig = {
           path: 'Message',
-          postProcess: postProcess.bind({$scope: $scope}),
+        //  postProcess: postProcess.bind({$scope: $scope}),
           // options: {
           //     filter: {},
           //     languageId: $scope.user.language
