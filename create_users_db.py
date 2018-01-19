@@ -1,6 +1,6 @@
 import MySQLdb as mdb
 from app_config.config import CONFIG
-
+import musixmatch
 '''
 ADAM:
 This file creates a simple mysql users database.

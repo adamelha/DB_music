@@ -5,6 +5,8 @@ from flask import Flask,render_template,jsonify,json,request
 import MySQLdb as mdb
 from app_config.config import CONFIG
 from flask import Response
+import os
+from flask import send_from_directory
 
 application = Flask(__name__)
 
@@ -13,15 +15,9 @@ ADAM:
 This file runs the flask server.
 IMPORTANT: Make sure that app_config/config.py is configured according to your mysql server credentials!
 
-Currenly I added the Sign up button that opens a form for a new user and adds him to the DB.
-A bit buggy but works...
-
-The default is port 5000 so to access the server open your browser to http://localhost:5000/
+The app will run on port 4000 browser to http://localhost:4000/
 '''
 
-
-#client = MongoClient('localhost:27017')
-#db = client.MachineData
 
 # ADAM: This was added by me
 # If you press the signup button a pop up will pop, after filling the form and pressing Sign Up!
@@ -63,11 +59,20 @@ def signUp():
 
     return Response(status=200)
 
+@application.route("/login",methods=['POST'])
+def login():
+    print ('login!!!')
+    json_data = request.json
+    userName = json_data['username']
+    password = json_data['password']
+
+    return Response(status=200)
+
 def getTrackList():
     print ('getTracksByArtist!!!!')
     try:
-        #json_data = request.json['info']
-        json_data = {'artist_name' : "", 'album_name' : "", 'only_if_has_lyrics' : 1}
+        json_data = request.json['info']
+        #json_data = {'artist_name' : "", 'album_name' : "", 'only_if_has_lyrics' : 1}
         
         # artist name to filter by, if an empty string is recived no filtering by artist will be made
         if (json_data['artist_name'] != ""):
@@ -111,119 +116,45 @@ def getTrackList():
     except Exception as e:
         return jsonify(status='ERROR',message=str(e))
 
-# ADAM: This is the main route, it show list.htm
+# ADAM: This is the main route
 @application.route('/')
-def showMachineList():
-    return render_template('list.html')
+def show_index():
+    return render_template('index.html')
 
 
 
-# ADAM: The following (until __main__) are machine functions we should get rid of (or keep meanwhile as reference code)
-@application.route("/addMachine", methods=['POST'])
-def addMachine():
-    try:
-        json_data = request.json['info']
-        deviceName = json_data['device']
-        ipAddress = json_data['ip']
-        userName = json_data['username']
-        password = json_data['password']
-        portNumber = json_data['port']
-
-        print ('insert machine!!!')
-
-        return jsonify(status='OK', message='inserted successfully')
-
-    except Exception as e:
-        return jsonify(status='ERROR', message=str(e))
+@application.route('/<string:page_name>/')
+def render_static_page(page_name):
+    return render_template('%s.html' % page_name)
 
 
-@application.route('/getMachine', methods=['POST'])
-def getMachine():
-    try:
-        print ('getMachine!!!')
-        machineId = request.json['id']
-        machineDetail = {
-            'device': machine['device'],
-            'ip': machine['ip'],
-            'username': machine['username'],
-            'password': machine['password'],
-            'port': machine['port'],
-            'id': str(machine['_id'])
-        }
-        return json.dumps(machineDetail)
-    except Exception as e:
-        return str(e)
+# Workaroud: redirect to the static directory since client code does not call /static/... but a relative path
+@application.route('/app/<path:filename>')
+def serve_static_app(filename):
+    root_dir = os.path.dirname(os.path.abspath(__file__))
+    return send_from_directory(os.path.join(root_dir, 'static', 'app'), filename)
+@application.route('/assets/<path:filename>')
+def serve_static_assets(filename):
+    root_dir = os.path.dirname(os.path.abspath(__file__))
+    return send_from_directory(os.path.join(root_dir, 'static', 'assets'), filename)
+@application.route('/fonts/<path:filename>')
+def serve_static_fonts(filename):
+    root_dir = os.path.dirname(os.path.abspath(__file__))
+    return send_from_directory(os.path.join(root_dir, 'static', 'fonts'), filename)
+@application.route('/maps/<path:filename>')
+def serve_static_maps(filename):
+    root_dir = os.path.dirname(os.path.abspath(__file__))
+    return send_from_directory(os.path.join(root_dir, 'static', 'maps'), filename)
+@application.route('/scripts/<path:filename>')
+def serve_static_(filename):
+    root_dir = os.path.dirname(os.path.abspath(__file__))
+    return send_from_directory(os.path.join(root_dir, 'static', 'scripts'), filename)
+@application.route('/styles/<path:filename>')
+def serve_static_styles(filename):
+    root_dir = os.path.dirname(os.path.abspath(__file__))
+    return send_from_directory(os.path.join(root_dir, 'static', 'styles'), filename)
 
-
-@application.route('/updateMachine', methods=['POST'])
-def updateMachine():
-    try:
-        print ("updateMachine!!!")
-        machineInfo = request.json['info']
-        machineId = machineInfo['id']
-        device = machineInfo['device']
-        ip = machineInfo['ip']
-        username = machineInfo['username']
-        password = machineInfo['password']
-        port = machineInfo['port']
-
-        return jsonify(status='OK', message='updated successfully')
-    except Exception as e:
-        return jsonify(status='ERROR', message=str(e))
-
-
-@application.route("/getMachineList", methods=['POST'])
-def getMachineList():
-    try:
-
-        print ('getMachineList!!!')
-
-        machineList = []
-
-    except Exception as e:
-        return str(e)
-    return json.dumps(machineList)
-
-
-@application.route("/execute", methods=['POST'])
-def execute():
-    try:
-        print ('execute!!!')
-
-        machineInfo = request.json['info']
-        ip = machineInfo['ip']
-        username = machineInfo['username']
-        password = machineInfo['password']
-        command = machineInfo['command']
-        isRoot = machineInfo['isRoot']
-
-        env.host_string = username + '@' + ip
-        env.password = password
-        resp = ''
-        with settings(warn_only=True):
-            if isRoot:
-                resp = sudo(command)
-            else:
-                resp = run(command)
-
-        return jsonify(status='OK', message=resp)
-    except Exception as e:
-        print ('Error is ' + str(e))
-        return jsonify(status='ERROR', message=str(e))
-
-
-@application.route("/deleteMachine", methods=['POST'])
-def deleteMachine():
-    try:
-        print ('deleteMachine!!!')
-
-        machineId = request.json['id']
-
-        return jsonify(status='OK', message='deletion successful')
-    except Exception as e:
-        return jsonify(status='ERROR', message=str(e))
-
-# ADAM: The main, takes the config from the config file and connects to the mysql server
+# The main, takes the config from the config file and connects to the mysql server
 # Then runs the server
 if __name__ == "__main__":
     con = mdb.connect(CONFIG['mysql']['host'], CONFIG['mysql']['user'], CONFIG['mysql']['pass'])
@@ -231,5 +162,5 @@ if __name__ == "__main__":
         cur = con.cursor(mdb.cursors.DictCursor)
         cur.execute('USE {}'.format(CONFIG['mysql']['database']))
 
-    application.run(host='0.0.0.0')
+    application.run(host=CONFIG['webserver']['ip'], port=CONFIG['webserver']['port'])
 
