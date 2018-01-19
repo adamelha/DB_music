@@ -1,4 +1,3 @@
-
 (function () {
     'use strict';
 
@@ -27,9 +26,10 @@
                 searchGlobal: '=?', // if true, global table search is enabled
                 setOfFiltersFields: '=?',
                 // languageId: '=',
+                mockItems: '=?',
                 tableConfig: '=' // {path,options,postProcess,fields,languageId} - path for call, options: same as rest-service, postProcess is a function that is called on results from server
             },
-            controller: function ($scope, $transclude, editableOptions, editableThemes,  $timeout) {
+            controller: function ($scope, $transclude, editableOptions, editableThemes, $timeout, ServerConnection, $q) {
                 $scope.tableState = {
                     items: [],
                     pageSize: 10,
@@ -44,8 +44,8 @@
                 //     }
                 // }
 
-                function setFieldDisplayValue(fields,fieldName,value) {
-                    let f=fields.filter((f)=>f.name==fieldName)[0]
+                function setFieldDisplayValue(fields, fieldName, value) {
+                    let f = fields.filter((f) => f.name == fieldName)[0]
                     f.displayedValue = value;
                 }
 
@@ -64,7 +64,7 @@
                             o = o[n];
                         }
                     }
-                    return o[a[a.length - 1]] ;
+                    return o[a[a.length - 1]];
                 }
 
                 $scope.getFieldByPath = getFieldByPath;
@@ -129,38 +129,54 @@
                 //called whenever a change is made in table state, tableCtrl:{pagination,sort,search}
                 $scope.getDataFromServer = async function (tableCtrl, a, field) {
 
-                    // $scope.tableState.isLoading = true;
-                    // tableCtrl.filter = tableCtrl.filter || {};
-                    // updateFilter(tableCtrl, field)
-                    // $scope.tableCtrl = tableCtrl;
-                    // $scope.tableState.pageSize = tableCtrl.pagination.number;
+
+                    $scope.tableState.isLoading = true;
+                    tableCtrl.filter = tableCtrl.filter || {};
+                    updateFilter(tableCtrl, field)
+                    $scope.tableCtrl = tableCtrl;
+                    $scope.tableState.pageSize = tableCtrl.pagination.number;
                     //
                     // //set options for server call by current table state
-                    // let paging = getPagination(tableCtrl.pagination)
-                    // let sort = getSort(tableCtrl.sort)
-                    // let filters = Object.assign({}, $scope.tableConfig.options.filter, tableCtrl.filter)
-                    // let populate = $scope.tableConfig.options.populate;
-                    // let languageId = $scope.tableConfig.options.languageId;
-                    // let restOptions = {filters, paging, sort, populate, languageId}
+                    let paging = getPagination(tableCtrl.pagination)
+                    let sort = getSort(tableCtrl.sort)
+                    let filters = Object.assign({}, $scope.tableConfig.options.filter, tableCtrl.filter)
+                    let populate = $scope.tableConfig.options.populate;
+                    let reqOtions = {filters, paging, sort, populate}
                     //
-                    // let restResult = (await restService.get($scope.tableConfig.path, restOptions))
+                    let reqResult;
+                    if ($scope.mockItems) {
+                        reqResult =await returnMock();
+                    }
+                    else{
+                        reqResult = (await ServerConnection.get($scope.tableConfig.path, reqOtions))
+
+                    }
                     //
-                    // let items = restResult.results;
-                    // let itemCount = restResult.total_rows;
+                    let items = reqResult.results;
+                    let itemCount = reqResult.total_rows;
                     //
                     // //call post process function if there is one
-                    // if ($scope.tableConfig.postProcess) {
-                    //     items = $scope.tableConfig.postProcess(items)
-                    // }
+                    if ($scope.tableConfig.postProcess) {
+                        items = $scope.tableConfig.postProcess(items)
+                    }
                     //
-                    // tableCtrl.pagination.numberOfPages = Math.ceil(itemCount / tableCtrl.pagination.number);
+                    tableCtrl.pagination.numberOfPages = Math.ceil(itemCount / tableCtrl.pagination.number);
                     //
-                    // $scope.tableState.items = items;
+                    $scope.tableState.items = items;
                     //
-                    // $scope.tableState.isLoading = false;
+                    $scope.tableState.isLoading = false;
                     //
-                    // $timeout(() => $scope.$apply(), 0)
+                    $timeout(() => $scope.$apply(), 0);
                     return $scope.tableState.items
+                }
+
+                async function returnMock() {
+                    let d = $q.defer();
+                    $timeout(() => {
+                        let items = $scope.mockItems || [];
+                        d.resolve({total_rows:items.length, results:items})
+                    });
+                    return d.promise;
                 }
 
                 function updateFilter(tableCtrl, field) {

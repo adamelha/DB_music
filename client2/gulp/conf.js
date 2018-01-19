@@ -13,7 +13,9 @@ var gutil = require('gulp-util');
  */
 exports.paths = {
   src: 'src',
-  dist: 'release',
+  src2: 'test2',
+  dist: '../bidblade-server/public/dashboard',
+  dist2: 'test',
   devDist: 'dev-release',
   tmp: '.tmp',
   e2e: 'e2e'
@@ -25,7 +27,7 @@ exports.paths = {
  *  to inject css preprocessor deps and js files in karma
  */
 exports.wiredep = {
-  exclude: [/\/bootstrap\.js$/, /\/bootstrap-sass\/.*\.js/, /\/require\.js/],
+  exclude: [/\/bootstrap\.js$/,/\/jstree\/.*\.css/, /\/bootstrap-sass\/.*\.js/, /\/require\.js/],
   directory: 'bower_components'
 };
 

@@ -3,6 +3,7 @@
 var path = require('path');
 var gulp = require('gulp');
 var conf = require('./conf');
+var argv = require('yargs').argv;
 
 var $ = require('gulp-load-plugins')();
 

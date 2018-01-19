@@ -6,12 +6,12 @@
 
     angular.module('BlurAdmin.connection', [])
     //factory for the server connection
-        .factory('ServerConnection', ['$http', '$rootScope', '$q', 'Config', function ($http, $rootScope, $q, Config) {
+        .factory('ServerConnection', ['$http', '$rootScope', '$q',  function ($http, $rootScope, $q) {
             var connection =
                 {
                     isLoading: false,
 
-                    serverUrl: '127.0.0.1:',//TODO add port
+                    serverUrl: '127.0.0.1:4000',//TODO add port
 
                     dataToUrl: function (data) {
                         let andUri = "?";

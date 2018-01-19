@@ -33,13 +33,14 @@ function browserSyncInit(baseDir, browser) {
    *
    * For more details and option, https://github.com/chimurai/http-proxy-middleware/blob/v0.9.0/README.md
    */
-  // server.middleware = proxyMiddleware('/users', {target: 'http://jsonplaceholder.typicode.com', changeOrigin: true});
+  // server.middleware = proxyMiddleware('/users', {target: 'https://jsonplaceholder.typicode.com', changeOrigin: true});
 
   browserSync.instance = browserSync.init({
     startPath: '/',
     server: server,
     browser: browser,
-    ghostMode: false
+    ghostMode: false,
+    port:5002
   });
 }
 
@@ -52,6 +53,10 @@ gulp.task('serve', ['watch'], function () {
 });
 
 gulp.task('serve:dist', ['build'], function () {
+  browserSyncInit(conf.paths.dist);
+});
+
+gulp.task('build-prod', ['build'], function () {
   browserSyncInit(conf.paths.dist);
 });
 

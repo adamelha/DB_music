@@ -33,6 +33,7 @@ var buildStyles = function () {
   };
 
   var injectFiles = gulp.src([
+    path.join(conf.paths.src, '/app/directives/**/_*.scss'),
     path.join(conf.paths.src, '/sass/**/_*.scss'),
     '!' + path.join(conf.paths.src, '/sass/theme/conf/**/*.scss'),
     '!' + path.join(conf.paths.src, '/sass/404.scss'),
