@@ -14,7 +14,7 @@ var gutil = require('gulp-util');
 exports.paths = {
   src: 'src',
   src2: 'test2',
-  dist: '../bidblade-server/public/dashboard',
+  dist: 'release',
   dist2: 'test',
   devDist: 'dev-release',
   tmp: '.tmp',
