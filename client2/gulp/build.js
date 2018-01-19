@@ -4,6 +4,7 @@ var path = require('path');
 var gulp = require('gulp');
 var conf = require('./conf');
 var babel = require('gulp-babel');
+var polyfill = require('babel-polyfill');
 
 var $ = require('gulp-load-plugins')({
     pattern: ['gulp-*', 'main-bower-files', 'uglify-save-license', 'del']
@@ -49,7 +50,7 @@ gulp.task('html', ['inject', 'partials'], function () {
         .pipe(appFilter) //added this to select only app-*.js file (exclude vendor for annotate and babel)
         .pipe(babel({
             compact: false,
-            presets: [['env', {modules: false}]]
+            presets: ["env", "stage-0" ]
         }))
         .pipe($.ngAnnotate())
         .pipe(appFilter.restore)
@@ -115,7 +116,7 @@ gulp.task('babeltask', function () {
     ])
         .pipe(babel({
             compact: false,
-            presets: [['env', {modules: false}]]
+            presets: ["env", "stage-0" ]
         }))
         // .pipe(gulp.dest(path.join(conf.paths.dist, '/')));
         .pipe(gulp.dest(path.join(conf.paths.tmp, '/serve/')));
@@ -181,7 +182,7 @@ gulp.task('html:prod',  function () {
 gulp.task('babelres',function () {
     gulp.src(path.join(conf.paths.dist,'/scripts/*.js'))
         .pipe(babel({
-            presets: ['env']
+            presets: ["env", "stage-0" ]
         }))
         .pipe(gulp.dest(path.join(conf.paths.dist, '/scripts/')))
 })

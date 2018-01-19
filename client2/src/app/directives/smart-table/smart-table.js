@@ -127,7 +127,7 @@
                 }
 
                 //called whenever a change is made in table state, tableCtrl:{pagination,sort,search}
-                $scope.getDataFromServer = async function (tableCtrl, a, field) {
+                $scope.getDataFromServer = function (tableCtrl, a, field) {
 
 
                     $scope.tableState.isLoading = true;
@@ -145,32 +145,37 @@
                     //
                     let reqResult;
                     if ($scope.mockItems) {
-                        reqResult =await returnMock();
+                        reqResult = returnMock();
                     }
                     else{
-                        reqResult = (await ServerConnection.get($scope.tableConfig.path, reqOtions))
+                        reqResult = ( ServerConnection.get($scope.tableConfig.path, reqOtions))
 
                     }
+                    reqResult.then((res)=>{
+                        $scope.tableState.items = res.results;
+                        let items = res.results;
+                        let itemCount = reqResult.total_rows;
+                        //
+                        // //call post process function if there is one
+                        if ($scope.tableConfig.postProcess) {
+                            items = $scope.tableConfig.postProcess(items)
+                        }
+                        //
+                        tableCtrl.pagination.numberOfPages = Math.ceil(itemCount / tableCtrl.pagination.number);
+                        //
+                        $scope.tableState.items = items;
+                        //
+                        $scope.tableState.isLoading = false;
+                        //
+                        $timeout(() => $scope.$apply(), 0);
+
+                    })
                     //
-                    let items = reqResult.results;
-                    let itemCount = reqResult.total_rows;
-                    //
-                    // //call post process function if there is one
-                    if ($scope.tableConfig.postProcess) {
-                        items = $scope.tableConfig.postProcess(items)
-                    }
-                    //
-                    tableCtrl.pagination.numberOfPages = Math.ceil(itemCount / tableCtrl.pagination.number);
-                    //
-                    $scope.tableState.items = items;
-                    //
-                    $scope.tableState.isLoading = false;
-                    //
-                    $timeout(() => $scope.$apply(), 0);
-                    return $scope.tableState.items
+
+                    return reqResult.promise;
                 }
 
-                async function returnMock() {
+                function returnMock() {
                     let d = $q.defer();
                     $timeout(() => {
                         let items = $scope.mockItems || [];
