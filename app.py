@@ -4,6 +4,7 @@ from flask import Flask,render_template,jsonify,json,request
 #from fabric.api import *
 import MySQLdb as mdb
 from app_config.config import CONFIG
+from flask import Response
 
 application = Flask(__name__)
 
@@ -41,10 +42,9 @@ def signUp():
                 VALUES ('{}','{}')
                 '''.format(userName, password)
 
-
         with con:
             cur = con.cursor(mdb.cursors.DictCursor)
-            cur.execute('USE {}'.format(CONFIG['mysql']['database']))
+
 
             print ('executing the following sql command:')
             print (sql_cmd)
@@ -58,10 +58,10 @@ def signUp():
                 print ('user_id: {}, user_name: {}, user_password: {}'.format(row['user_id'], row['user_name'],
                                                                              row['user_password']))
 
-        return jsonify(status='OK', message='User inserted successfully')
-
     except Exception as e:
-        return jsonify(status='ERROR',message=str(e))
+        return Response(json.dumps({'error' : str(e)}), status=409)
+
+    return Response(status=200)
 
 def getTrackList():
     print ('getTracksByArtist!!!!')
@@ -228,5 +228,9 @@ def deleteMachine():
 # Then runs the server
 if __name__ == "__main__":
     con = mdb.connect(CONFIG['mysql']['host'], CONFIG['mysql']['user'], CONFIG['mysql']['pass'])
+    with con:
+        cur = con.cursor(mdb.cursors.DictCursor)
+        cur.execute('USE {}'.format(CONFIG['mysql']['database']))
+
     application.run(host='0.0.0.0')
 

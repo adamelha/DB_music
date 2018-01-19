@@ -1,9 +1,9 @@
 CONFIG = {
     "mysql": {
-        "user": "DbMysql23",
-        "pass": "DbMysql23",
+        "user": "root",
+        "pass": "123",
         "database": "DbMysql23",
-        "host": "mysqlsrv.cs.tau.ac.il",
+        "host": "localhost",
         "tables": {
             "users": "Users"
         }
