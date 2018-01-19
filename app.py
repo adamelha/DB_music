@@ -63,6 +63,55 @@ def signUp():
     except Exception as e:
         return jsonify(status='ERROR',message=str(e))
 
+def getTrackList():
+    print ('getTracksByArtist!!!!')
+    try:
+        #json_data = request.json['info']
+        json_data = {'artist_name' : "", 'album_name' : "", 'only_if_has_lyrics' : 1}
+        
+        # artist name to filter by, if an empty string is recived no filtering by artist will be made
+        if (json_data['artist_name'] != ""):
+            artist_name = 'artist_name = "{}" and '.format(json_data['artist_name'])
+        else:
+            artist_name = ""
+
+        # album name to filter by, if an empty string is recived no filtering by album will be made
+        if (json_data['album_name'] != ""):
+            album_name = 'album_name = "{}" and '.format(json_data['album_name'])
+        else:
+            album_name = ""
+            
+
+        # if set, query will only retrive tracks that has available lyrics
+        if(json_data['only_if_has_lyrics'] == 1):
+            only_if_has_lyrics = 'lyrics_id <> 0 and '
+        else:
+            only_if_has_lyrics = ""
+
+        print ('Get a tracks list filtered by artist name and/or album name')
+
+        sql_cmd = '''
+                SELECT track_name, album_name, artist_name, lyrics_id
+                FROM Tracks, Artists, Albums
+                WHERE {}{}{}Tracks.artist_id = Artists.artist_id and Tracks.album_id = Albums.album_id
+                ORDER BY Tracks.artist_id, Tracks.album_id, track_pos_in_album
+                '''.format(artist_name, album_name, only_if_has_lyrics)
+        
+        with con:
+            cur = con.cursor(mdb.cursors.DictCursor)
+            cur.execute('USE proj_db')
+
+            print ('executing the following sql command:')
+            print (sql_cmd)
+
+            cur.execute(sql_cmd)       
+            tracks = cur.fetchall()
+
+        return return_tracks_as_json
+
+    except Exception as e:
+        return jsonify(status='ERROR',message=str(e))
+
 # ADAM: This is the main route, it show list.htm
 @application.route('/')
 def showMachineList():
