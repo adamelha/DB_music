@@ -1,7 +1,2 @@
 *.pyc
 .idea/
-/client/node_modules/
-package-lock.json
-/client2/.tmp/
-/client2/bower_components/
-/client2/release/
