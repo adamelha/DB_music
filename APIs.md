@@ -90,11 +90,11 @@
    
 * **Data Params**
 
-   ```json
+   ```javascript
    {
-	entries_per_page : <How many song entries you wish receive>,
-	page_index : <the page number you wish to receive>
-	filters : {
+	'entries_per_page' : <How many song entries you wish receive>,
+	'page_index' : <the page number you wish to receive>
+	'filters' : {
 				'name' : '<song name>',
 				'album' : '<album name>',
 				'artist' : '<artist name>',
@@ -107,14 +107,14 @@
 
   * **Code:** 200 OK <br />
     **Content:**
-	```json
+	```javascript
 	{
-		list : [
+		'list' : [
 					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>', 'lyrics': '<song lyrics>' },
 					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>', 'lyrics': '<song lyrics>' },
 					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>', 'lyrics': '<song lyrics>' },
 					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>', 'lyrics': '<song lyrics>' },
-					'...'
+					...
 				]
 	}
 	```
