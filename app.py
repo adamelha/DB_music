@@ -233,7 +233,7 @@ def getTrackList():
 
 
 @application.route("/albums",methods=['POST'])
-def getArtistList():
+def getAlbumsList():
     print ('albums!!!!')
     try:
         order_field_mapping = {'name': 'album_name', 'artist': 'artist_name', 'number_of_songs': 'track_count'}
@@ -310,6 +310,97 @@ def getArtistList():
         return Response(json.dumps({'error': repr(e)}), status=401)
 
     return Response(json.dumps(resp_dict), status=200)
+
+
+@application.route("/artists",methods=['POST'])
+def getArtistsList():
+    print ('albums!!!!')
+    try:
+        order_field_mapping = {'name': 'artist_name', 'number_of_songs': 'artist_track_count'}
+        print request
+        json_data = request.get_json()
+        print json_data
+
+        entries_per_page = json_data['entries_per_page']
+        page_index = json_data['page_index']
+
+        if entries_per_page is None or not isinstance(entries_per_page, int) \
+                or page_index is None or not isinstance(page_index, int):
+            raise Exception("Bad entries_per_page or page_index")
+
+        offset = page_index * entries_per_page
+
+        # Make sure 'filters' is a key in the JSON
+        if (not 'filters' in json_data):
+            raise Exception("filters key not in json")
+
+        filters = json_data['filters']
+
+        # artist_name to filter by, if an empty string is received no filtering by artist will be made
+        if ('name' in filters):
+            artist_name = 'artist_name = "{}" and '.format(filters['name'])
+        else:
+            artist_name = ""
+
+        # track count name to filter in all the albums with more than the given number of songs.
+        # If not in filter no filtering by album will be made
+        if ('number_of_songs' in filters):
+            artist_track_count = 'artist_track_count > {} and '.format(filters['number_of_songs'])
+        else:
+            artist_track_count = ""
+
+        # If both are empty, no need for where clause
+        if artist_name == "" and artist_track_count == "":
+            where = ""
+        else:
+            where = "WHERE "
+            if artist_name != "":
+                where += artist_name
+            if artist_track_count != "":
+                where += "and " + artist_track_count
+            # Remove extra 'and'
+            where = where[:-4]
+
+        print ('Get a tracks list filtered by artist name and/or album name')
+
+        sql_cmd = '''
+                    SELECT artist_name, artist_track_count
+                    FROM (
+                        SELECT artist_name, count(artist_id) as artist_track_count
+                        FROM (
+                                SELECT Tracks.artist_id, artist_name, track_id
+                                FROM Tracks, Artists
+                                WHERE Tracks.artist_id = Artists.artist_id
+                            ) AS x
+                        GROUP BY artist_id
+                        ) AS y
+                    {}
+                    ORDER BY {} {}
+                    '''.format(where, order_field_mapping[json_data['field']], json_data['order'])
+
+        tracks = execute_sql_command_fetch_all(sql_cmd)
+        # print (tracks)
+        # Create dictionary for response JSON
+
+        resp_dict = {'list': [], 'total_rows': len(tracks)}
+        for i in range(offset, offset + entries_per_page):
+            if i >= len(tracks):
+                break
+
+            dict = {'name': tracks[i]['artist_name'],
+                    'number_of_songs': tracks[i]['artist_track_count']
+                    }
+            # Append entry to response
+            resp_dict['list'].append(dict)
+
+        print('Returning the following list')
+        print(resp_dict)
+
+    except Exception as e:
+        return Response(json.dumps({'error': repr(e)}), status=401)
+
+    return Response(json.dumps(resp_dict), status=200)
+
 
 # This is the main route
 @application.route('/')
