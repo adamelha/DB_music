@@ -12,8 +12,7 @@
 
 * **HTTP Headers**
 	
-	* **username:** A new user name
-	* **password:** Password of the new user
+	None
 	
 *  **URL Params**
 
@@ -21,7 +20,12 @@
 
 * **Data Params**
 
-   None
+   ```javascript
+   {
+	'username' : '<username>',
+	'password' : '<password>'
+   }
+   ```
 
 * **Success Response:**
 
@@ -46,8 +50,7 @@
 
 * **HTTP Headers**
 	
-	* **username:** username
-	* **password:** password
+	None
 	
 *  **URL Params**
 
@@ -55,7 +58,12 @@
 
 * **Data Params**
 
-   None
+   ```javascript
+   {
+	'username' : '<username>',
+	'password' : '<password>'
+   }
+   ```
 
 * **Success Response:**
 
@@ -82,8 +90,7 @@
 
 * **HTTP Headers**
 	
-	* **username:** username
-	* **password:** password
+	None
 	
 *  **URL Params**
 	
@@ -93,13 +100,14 @@
 
    ```javascript
    {
+    'username' : '<username>',
+	'password' : '<password>',
 	'entries_per_page' : <int: How many song entries you wish receive>,
 	'page_index' : <int: the page number you wish to receive>
 	'filters' : {
 				'name' : '<song name>',
 				'album' : '<album name>',
 				'artist' : '<artist name>',
-				'lyrics' : '<CURRENTLY DOES NOTHING! a substring of the lyrics of a song. If it exists in a song, that song will be in the results>'
 			  }
    }
    ```
@@ -111,10 +119,10 @@
 	```javascript
 	{
 		'list' : [
-					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>', 'lyrics': <song lyrics id (actual lyrics in future> },
-					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>', 'lyrics': <song lyrics id (actual lyrics in future> },
-					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>', 'lyrics': <song lyrics id (actual lyrics in future> },
-					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>', 'lyrics': <song lyrics id (actual lyrics in future> }
+					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>' },
+					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>' },
+					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>' },
+					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>' }
 					...
 				],
 		'total_rows' : <int: The total number of entries passing the filter>
@@ -141,8 +149,7 @@
 
 * **HTTP Headers**
 	
-	* **username:** username
-	* **password:** password
+	None
 	
 *  **URL Params**
 	
@@ -152,6 +159,8 @@
 
    ```javascript
    {
+    'username' : '<username>',
+	'password' : '<password>',
 	'entries_per_page' : <int: How many song entries you wish receive>,
 	'page_index' : <int: the page number you wish to receive>
 	'filters' : {
@@ -198,8 +207,7 @@
 
 * **HTTP Headers**
 	
-	* **username:** username
-	* **password:** password
+	None
 	
 *  **URL Params**
 	
@@ -209,6 +217,8 @@
 
    ```javascript
    {
+    'username' : '<username>',
+	'password' : '<password>',
 	'entries_per_page' : <int: How many song entries you wish receive>,
 	'page_index' : <int: the page number you wish to receive>
 	'filters' : {
