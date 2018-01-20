@@ -11,12 +11,22 @@ from flask import send_from_directory
 application = Flask(__name__)
 
 '''
-ADAM:
 This file runs the flask server.
 IMPORTANT: Make sure that app_config/config.py is configured according to your mysql server credentials!
 
 The app will run on port 4000 browser to http://localhost:4000/
 '''
+
+
+'''
+Exceptions. Move to separate file?
+'''
+class UserNotExistException(Exception):
+    pass
+class UserExistsException(Exception):
+    pass
+
+
 
 '''
 Get an sql command and return all the rows
@@ -28,9 +38,6 @@ def execute_sql_command_fetch_all(cmd):
         cur = con.cursor(mdb.cursors.DictCursor)
         cur.execute(cmd)
         return cur.fetchall()
-
-class UserNotExistException(Exception):
-    pass
 
 '''
 Validate user based on credentials in the HTTP request headers.
@@ -54,13 +61,34 @@ def validate_user(request):
         print (str(e))
         raise UserNotExistException("User and password do not match an existing user")
 
-# ADAM: This was added by me
-# If you press the signup button a pop up will pop, after filling the form and pressing Sign Up!
-# then the user will be inserted into our mysql database. database name is determined by CONFIG['mysql']['database'], table is Users
+'''
+Assert that a username in a request does not exist in the Users DB.
+If it does, raise a UserExistsException
+'''
+def validate_user_does_not_exist(request):
+    try:
+        userName = request.headers['username']
+        sql_cmd = '''
+                    SELECT user_name
+                    FROM Users
+                    WHERE user_name='{}'
+                    '''.format(userName)
+        rows = execute_sql_command_fetch_all(sql_cmd)
+
+        if len(rows) > 0:
+            raise Exception()
+    except Exception as e:
+        print (str(e))
+        raise UserExistsException("User already exists")
+'''
+Insert a user into the database only if the user does not exist.
+Otherwise return user exists error
+'''
 @application.route("/signUp",methods=['POST'])
 def signUp():
     print ('signup!!!!')
     try:
+        validate_user_does_not_exist(request)
         userName = request.headers['username']
         password = request.headers['password']
 
@@ -75,13 +103,12 @@ def signUp():
         with con:
             cur = con.cursor(mdb.cursors.DictCursor)
 
-
             print ('executing the following sql command:')
             print (sql_cmd)
 
             cur.execute(sql_cmd)
 
-            # Print the data
+            # Print the data for debug purposes
             cur.execute('SELECT * FROM Users LIMIT 30')
             rows = cur.fetchall()
             for row in rows:
@@ -89,7 +116,10 @@ def signUp():
                                                                              row['user_password']))
 
     except Exception as e:
-        return Response(json.dumps({'error' : str(e)}), status=409)
+        if isinstance(e, UserExistsException):
+            return Response(json.dumps({'error': "User already exists"}), status=409)
+        else:
+            return Response(json.dumps({'error': str(e)}), status=500)
 
     return Response(status=200)
 
@@ -155,7 +185,7 @@ def getTrackList():
     except Exception as e:
         return jsonify(status='ERROR',message=str(e))
 
-# ADAM: This is the main route
+# This is the main route
 @application.route('/')
 def show_index():
     return render_template('index.html')

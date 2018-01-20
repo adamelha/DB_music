@@ -34,7 +34,7 @@
 
 **Log In**
 ----
-  Validates user credentials. If ok, client should store them locally and send the headers in every request
+  Validates user credentials. If ok, client should store them locally and send the headers in every request.
 
 * **URL**
 

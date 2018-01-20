@@ -2,7 +2,6 @@ import MySQLdb as mdb
 from app_config.config import CONFIG
 import musixmatch
 '''
-ADAM:
 This file creates a simple mysql users database.
 IMPORTANT: Make sure that app_config/config.py is configured according to your mysql server credentials!
 
