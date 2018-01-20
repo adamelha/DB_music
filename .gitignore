@@ -1,1 +1,5 @@
 *.pyc
+.idea/
+**/node_modules/**/*
+**/bower_components/**/*
+client2/yarn.lock
