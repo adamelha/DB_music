@@ -1,4 +1,16 @@
-**Sign Up**
+# The following API's are provided by this server:
+
+- [Sign Up](#sign-up)
+- [Log In](#log-in)
+- [Get Songs Table (or playlist songs table)](#get-songs-table-or-playlist-songs-table-)
+- [Get Artists Table](#get-artists-table)
+- [Get Albums Table](#get-albums-table)
+- [Search (Autocorrect) for Playlist](#search-autocorrect-for-playlist)
+- [Add Song to Playlist](#add-song-to-playlist)
+- [Get User Playlists](#get-user-playlists)
+
+
+## Sign Up
 ----
   Adds a user into the Users database.
 
@@ -34,9 +46,9 @@
 * **Error Response:**
 
   * **Code:** 409 CONFLICT <br />
-	**Content:** `{ error : "User already exists" }`
+  * **Content:** `{ error : "User already exists" }`
 
-**Log In**
+## Log In
 ----
   Validates user credentials. If ok, client should store them locally and send the headers in every request.
 
@@ -72,12 +84,14 @@
 * **Error Response:**
 
   * **Code:** 401 UNAUTHORIZED <br />
-	**Content:** `{ error : "User and password do not match an existing user" }`
+  *	**Content:** `{ error : "User and password do not match an existing user" }`
 	
-**Get Songs Table**
+## Get Songs Table (or playlist songs table)
 ----
   Returns the table of all the songs depending on a filter and number of pages to display.
-  Currently does not check user for debugging simplicity.
+  * If 'playlist_id' is defined in the body - then display the songs from that playlist.
+  * If 'playlist_id' is not defined in the body - then display from regular database
+  
   NOTE: filters are in JSON in the Data Params  
 
 * **URL**
@@ -104,10 +118,11 @@
 	'password' : '<password>',
 	'entries_per_page' : <int: How many song entries you wish receive>,
 	'page_index' : <int: the page number you wish to receive>
+	'playlist_id' : <int: If displaying a playlist, this will be the id of the playlist to display>
 	'filters' : {
 				'name' : '<song name>',
 				'album' : '<album name>',
-				'artist' : '<artist name>',
+				'artist' : '<artist name>'
 			  }
    }
    ```
@@ -115,7 +130,7 @@
 * **Success Response:**
 
   * **Code:** 200 OK <br />
-    **Content:**
+  * **Content:**
 	```javascript
 	{
 		'list' : [
@@ -132,8 +147,8 @@
 
   * **Code:** 401 UNAUTHORIZED <br />
 	**Content:** `{ error : "User and password do not match an existing user" }`
-	
-**Get Artists Table**
+
+## Get Artists Table
 ----
   Returns the table of all the artists depending on a filter and number of pages to display.
   Currently does not check user for debugging simplicity.
@@ -173,7 +188,7 @@
 * **Success Response:**
 
   * **Code:** 200 OK <br />
-    **Content:**
+  * **Content:**
 	```javascript
 	{
 		'list' : [
@@ -189,9 +204,9 @@
 * **Error Response:**
 
   * **Code:** 401 UNAUTHORIZED <br />
-	**Content:** `{ error : "User and password do not match an existing user" }`
+  *	**Content:** `{ error : "User and password do not match an existing user" }`
 	
-**Get Albums Table**
+## Get Albums Table
 ----
   Returns the table of all the albums depending on a filter and number of pages to display.
   Currently does not check user for debugging simplicity.
@@ -232,7 +247,7 @@
 * **Success Response:**
 
   * **Code:** 200 OK <br />
-    **Content:**
+  * **Content:**
 	```javascript
 	{
 		'list' : [
@@ -248,5 +263,145 @@
 * **Error Response:**
 
   * **Code:** 401 UNAUTHORIZED <br />
-	**Content:** `{ error : "User and password do not match an existing user" }`
+  *	**Content:** `{ error : "User and password do not match an existing user" }`
 	
+## Search (Autocorrect) for Playlist
+----
+  Returns an array of `{'playlist_id': <int: id>, 'playlist_name': '<playlist name>'}` where playlist_name is a sub string of an actual playlist of the user
+  Used as autocorrect. when user wishes to add a song to one of his playlists, in the field of playlist that he chooses, each letter typed should trigger this API.
+
+ * **URL**
+
+  /searchPlaylist
+
+* **Method:**
+
+  `POST`
+
+* **HTTP Headers**
+	
+	None
+	
+*  **URL Params**
+	
+	None
+   
+* **Data Params**
+
+   ```javascript
+   {
+    'username' : '<username>',
+	'password' : '<password>',
+	'search' : '<substring of a playlist_name that belongs to username>'
+   }
+   ```
+
+* **Success Response:**
+
+  * **Code:** 200 OK <br />
+  *  **Content:**
+	```javascript
+	{
+		'list' : [
+					{'playlist_id': <int: id>, 'playlist_name': '<playlist name that the search param in the response is a substring of>'},
+					{'playlist_id': <int: id>, 'playlist_name': '<playlist name that the search param in the response is a substring of>'},
+					{'playlist_id': <int: id>, 'playlist_name': '<playlist name that the search param in the response is a substring of>'}
+					...
+				],
+	}
+	```
+* **Error Response:**
+
+  * **Code:** 401 UNAUTHORIZED <br />
+  *	**Content:** `{ error : "User and password do not match an existing user" }`
+
+
+## Add Song to Playlist
+----
+  Adds a song to a user's playlist. This API is called after *Search (Autocorrect) for Playlist* API* when user decides on playlist.
+
+ * **URL**
+
+  /addToPlaylist
+
+* **Method:**
+
+  `POST`
+
+* **HTTP Headers**
+	
+	None
+	
+*  **URL Params**
+	
+	None
+   
+* **Data Params**
+
+   ```javascript
+   {
+    'username' : '<username>',
+	'password' : '<password>',
+	'playlist_id' : <int: The id of the playlist chosen by the previous API>
+	'track_id' : <int: The id of the specific song the user chooses from the songs table (the /songs route)>
+   }
+   ```
+
+* **Success Response:**
+
+  * **Code:** 200 OK <br />
+* **Error Response:**
+
+  * **Code:** 401 UNAUTHORIZED <br />
+  *	**Content:** `{ error : "User and password do not match an existing user" }`
+	
+## Get User Playlists
+----
+  This is called when the user wishes to display his playlists. The page will be a list of buttons representing each playlist.
+  Returns a list of `{'playlist_id': <int: id>, 'playlist_name': '<playlist name>'}` corresponding to the playlists that belong to the user.
+  This way the client can display buttons for each playlist.
+
+ * **URL**
+
+  /playlists
+
+* **Method:**
+
+  `POST`
+
+* **HTTP Headers**
+	
+	None
+	
+*  **URL Params**
+	
+	None
+   
+* **Data Params**
+
+   ```javascript
+   {
+    'username' : '<username>',
+	'password' : '<password>',
+   }
+   ```
+
+* **Success Response:**
+
+  * **Code:** 200 OK <br />
+  *  **Content:**
+	```javascript
+	{
+		'list' : [
+					{'playlist_id': <int: id>, 'playlist_name': '<playlist name corresponding to user>'},
+					{'playlist_id': <int: id>, 'playlist_name': '<playlist name corresponding to user>'},
+					{'playlist_id': <int: id>, 'playlist_name': '<playlist name corresponding to user>'},
+					...
+				]
+	}
+	```
+* **Error Response:**
+
+  * **Code:** 401 UNAUTHORIZED <br />
+	**Content:** `{ error : "User and password do not match an existing user" }`
+
