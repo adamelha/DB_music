@@ -206,9 +206,32 @@ def create_tracks_table():
                     print ("Track insersion failed: {}".format(str(e)))
         return
 
+def create_playlists_table():
+
+    con = mdb.connect(CONFIG['mysql']['host'], CONFIG['mysql']['user'], CONFIG['mysql']['pass'],
+                    use_unicode = True, charset = 'utf8')
+    with con:
+        cur = con.cursor(mdb.cursors.DictCursor)
+        cur.execute('USE {}'.format(CONFIG['mysql']['database']))
+
+        # Drop the table if it already exists - start from clean
+        cur.execute("DROP TABLE IF EXISTS Playlists")
+
+        # Create Albums table
+        sql_cmd = '''CREATE TABLE IF NOT EXISTS Playlists
+                    (
+                    user_id int NOT NULL,
+                    playlist_name varchar(100) NOT NULL,
+                    track_id int NOT NULL
+                    )
+                    '''
+        cur.execute(sql_cmd)
+
+        return
 
 if __name__ == '__main__':
     create_db()
     create_artists_table()
     create_albums_table()
     create_tracks_table()
+    create_playlists_table()
