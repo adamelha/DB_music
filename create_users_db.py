@@ -100,8 +100,8 @@ def create_artists_table():
                                    artist["artist"]["artist_id"])
                 try:
                     cur.execute(sql_cmd)
-                except:
-                    print ("Artist insersion failed!")
+                except Exception as e:
+                    print ("Artist insersion failed: {}".format(str(e)))
         return
 
 def create_albums_table():
@@ -147,8 +147,8 @@ def create_albums_table():
                                    album["album"]["album_id"])
                 try:
                     cur.execute(sql_cmd)
-                except:
-                    print ("Album insersion failed!")
+                except Exception as e:
+                    print ("Album insersion failed: {}".format(str(e)))
         return
 
 def create_tracks_table():
@@ -202,8 +202,8 @@ def create_tracks_table():
                                    track["track"]["lyrics_id"], track["track"]["track_id"])
                 try:
                     cur.execute(sql_cmd)
-                except:
-                    print ("Track insersion failed!")
+                except Exception as e:
+                    print ("Track insersion failed: {}".format(str(e)))
         return
 
 
