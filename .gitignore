@@ -3,4 +3,4 @@
 **/node_modules/**/*
 **/bower_components/**/*
 client2/yarn.lock
-client2/.tmp/
+client2/.tmp/**
