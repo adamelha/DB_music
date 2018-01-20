@@ -69,6 +69,7 @@
 **Get Songs Table**
 ----
   Returns the table of all the songs depending on a filter and number of pages to display.
+  Currently does not check user for debugging simplicity.
   NOTE: in filters JSON in the Data Params  
 
 * **URL**
@@ -92,13 +93,13 @@
 
    ```javascript
    {
-	'entries_per_page' : <How many song entries you wish receive>,
-	'page_index' : <the page number you wish to receive>
+	'entries_per_page' : <int: How many song entries you wish receive>,
+	'page_index' : <int: the page number you wish to receive>
 	'filters' : {
 				'name' : '<song name>',
 				'album' : '<album name>',
 				'artist' : '<artist name>',
-				'lyrics' : '<a substring of the lyrics of a song. If it exists in a song, that song will be in the results>'
+				'lyrics' : '<CURRENTLY DOES NOTHING! a substring of the lyrics of a song. If it exists in a song, that song will be in the results>'
 			  }
    }
    ```
@@ -110,10 +111,10 @@
 	```javascript
 	{
 		'list' : [
-					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>', 'lyrics': '<song lyrics>' },
-					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>', 'lyrics': '<song lyrics>' },
-					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>', 'lyrics': '<song lyrics>' },
-					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>', 'lyrics': '<song lyrics>' },
+					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>', 'lyrics': <song lyrics id (actual lyrics in future> },
+					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>', 'lyrics': <song lyrics id (actual lyrics in future> },
+					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>', 'lyrics': <song lyrics id (actual lyrics in future> },
+					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>', 'lyrics': <song lyrics id (actual lyrics in future> },
 					...
 				]
 	}

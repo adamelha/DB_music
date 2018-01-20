@@ -87,7 +87,7 @@ def create_artists_table():
         MusixMatch = musixmatch.Musixmatch()
         
         # add to the DB the 100 top Artists in the US, UK and IL
-        for country in ['il']:
+        for country in ['US', 'UK']:
             jsonobj = MusixMatch.chart_artists(1, 3, country)
             for artist in jsonobj["message"]["body"]["artist_list"]:
 
@@ -138,11 +138,13 @@ def create_albums_table():
             for album in jsonobj["message"]["body"]["album_list"]:
 
                 #insert this record to the DB if and only if it's not already there
+                print(str(album["album"]["album_name"]))
+                print(type(album["album"]["album_name"]))
                 sql_cmd = '''
                         INSERT INTO Albums (album_id, album_name, artist_id, track_count)
                         SELECT * FROM (SELECT "{}", "{}", "{}", "{}") AS tmp
                         WHERE NOT EXISTS (SELECT album_id FROM Albums WHERE album_id = "{}")
-                        '''.format(album["album"]["album_id"], album["album"]["album_name"],
+                        '''.format(album["album"]["album_id"], str(album["album"]["album_name"]),
                                    album["album"]["artist_id"], album["album"]["album_track_count"],
                                    album["album"]["album_id"])
                 try:
@@ -196,7 +198,7 @@ def create_tracks_table():
                         INSERT INTO Tracks (track_id, track_name, track_length, track_pos_in_album, album_id, artist_id, lyrics_id)
                         SELECT * FROM (SELECT "{}", "{}", "{}", "{}", "{}", "{}", "{}") AS tmp
                         WHERE NOT EXISTS (SELECT track_id FROM Tracks WHERE track_id = "{}")
-                        '''.format(track["track"]["track_id"], track["track"]["track_name"],
+                        '''.format(track["track"]["track_id"], str(track["track"]["track_name"]),
                                    track["track"]["track_length"], track_pos_in_album,
                                    album["album_id"], album["artist_id"],
                                    track["track"]["lyrics_id"], track["track"]["track_id"])

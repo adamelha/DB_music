@@ -80,6 +80,7 @@ def validate_user_does_not_exist(request):
     except Exception as e:
         print (str(e))
         raise UserExistsException("User already exists")
+
 '''
 Insert a user into the database only if the user does not exist.
 Otherwise return user exists error
@@ -137,27 +138,53 @@ def login():
 
     return Response(status=200)
 
+@application.route("/getSongs",methods=['POST'])
 def getTrackList():
     print ('getTracksByArtist!!!!')
     try:
-        json_data = request.json['info']
+        print request
+        json_data = request.get_json()
+        print json_data
+
+        entries_per_page = json_data['entries_per_page']
+        page_index = json_data['page_index']
+
+        if entries_per_page is None or not isinstance(entries_per_page, int)\
+                or page_index is None or not isinstance(page_index, int):
+            raise Exception("Bad entries_per_page or page_index")
+
+        offset = page_index * entries_per_page
+
+        # Make sure 'filters' is a key in the JSON
+        if(not 'filters' in json_data):
+            raise Exception("filters key not in json")
+
+        filters = json_data['filters']
         #json_data = {'artist_name' : "", 'album_name' : "", 'only_if_has_lyrics' : 1}
-        
+
         # artist name to filter by, if an empty string is recived no filtering by artist will be made
-        if (json_data['artist_name'] != ""):
-            artist_name = 'artist_name = "{}" and '.format(json_data['artist_name'])
+        if ('song' in filters):
+            track_name = 'track_name = "{}" and '.format(filters['song'])
+        else:
+            track_name = ""
+
+        # artist name to filter by, if an empty string is recived no filtering by artist will be made
+        if ('artist' in filters):
+            artist_name = 'artist_name = "{}" and '.format(filters['artist'])
         else:
             artist_name = ""
 
         # album name to filter by, if an empty string is recived no filtering by album will be made
-        if (json_data['album_name'] != ""):
-            album_name = 'album_name = "{}" and '.format(json_data['album_name'])
+        if ('album' in filters):
+            print('yes')
+            album_name = 'album_name = "{}" and '.format(filters['album'])
+            print (album_name)
         else:
+            print('no')
             album_name = ""
-            
 
         # if set, query will only retrive tracks that has available lyrics
-        if(json_data['only_if_has_lyrics'] == 1):
+        if 'only_if_has_lyrics' in filters and filters['only_if_has_lyrics'] == 1:
             only_if_has_lyrics = 'lyrics_id <> 0 and '
         else:
             only_if_has_lyrics = ""
@@ -167,23 +194,34 @@ def getTrackList():
         sql_cmd = '''
                 SELECT track_name, album_name, artist_name, lyrics_id
                 FROM Tracks, Artists, Albums
-                WHERE {}{}{}Tracks.artist_id = Artists.artist_id and Tracks.album_id = Albums.album_id
+                WHERE {}{}{}{}Tracks.artist_id = Artists.artist_id and Tracks.album_id = Albums.album_id
                 ORDER BY Tracks.artist_id, Tracks.album_id, track_pos_in_album
-                '''.format(artist_name, album_name, only_if_has_lyrics)
-        
-        with con:
-            cur = con.cursor(mdb.cursors.DictCursor)
+                LIMIT {}, {}
+                '''.format(track_name, artist_name, album_name, only_if_has_lyrics, offset, entries_per_page)
 
-            print ('executing the following sql command:')
-            print (sql_cmd)
 
-            cur.execute(sql_cmd)       
-            tracks = cur.fetchall()
+        tracks = execute_sql_command_fetch_all(sql_cmd)
+        #print (tracks)
+        # Create dictionary for response JSON
+        resp_dict = { 'list' : []}
+        for track in tracks:
+            print (track)
+            dict = {'song' : track['track_name'],
+                    'artist' : track['artist_name'],
+                    'album' : track['album_name'],
+                    'lyrics' : track['lyrics_id']}
 
-        return return_tracks_as_json
+            # Append entry to response
+            resp_dict['list'].append(dict)
+
+        print('Returning the following list')
+        print(resp_dict)
 
     except Exception as e:
-        return jsonify(status='ERROR',message=str(e))
+        return Response(json.dumps({'error': repr(e)}), status=401)
+
+    return Response(json.dumps(resp_dict), status=200)
+
 
 # This is the main route
 @application.route('/')
