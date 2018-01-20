@@ -120,11 +120,11 @@
                     field.filter = field.filter || {};
                     field.filter.open = !field.filter.open;
                     $event.stopPropagation();
-                }
+                };
 
                 $scope.stopProp = ($event) => {
                     $event.stopPropagation();
-                }
+                };
 
                 //called whenever a change is made in table state, tableCtrl:{pagination,sort,search}
                 $scope.getDataFromServer = function (tableCtrl, a, field) {
@@ -141,20 +141,21 @@
                     let sort = getSort(tableCtrl.sort)
                     let filters = Object.assign({}, $scope.tableConfig.options.filter, tableCtrl.filter)
                     let populate = $scope.tableConfig.options.populate;
-                    let reqOtions = {filters, paging, sort, populate}
+                    let reqOtions = { ...paging, ...sort, filters:{...filters}}
+
                     //
                     let reqResult;
-                    if ($scope.mockItems) {
+                    if ($scope.mockItems && false) {
                         reqResult = returnMock();
                     }
                     else{
-                        reqResult = ( ServerConnection.get($scope.tableConfig.path, reqOtions))
+                        reqResult = ( ServerConnection.sendPost($scope.tableConfig.path, reqOtions))
 
                     }
                     reqResult.then((res)=>{
                         $scope.tableState.items = res.results;
                         let items = res.results;
-                        let itemCount = reqResult.total_rows;
+                        let itemCount = res.total_rows;
                         //
                         // //call post process function if there is one
                         if ($scope.tableConfig.postProcess) {
@@ -210,23 +211,25 @@
                                 tableCtrl.filter[field.name]['$and']['$<'] = field.filter.value.to;
 
                                 break;
-                            case 'number':
+                            default :
                                 tableCtrl.filter[field.name] = field.filter.value;
                                 break;
-                            default: //text
-                                tableCtrl.filter[field.name] = {'$like': field.filter.value};
+                            // default: //text
+                            //     tableCtrl.filter[field.name] = {'$like': field.filter.value};
                         }
                     }
                     // let filter = {}
 
                 }
 
+                $scope.updateFilter=updateFilter;
+
                 function getSort(filter) {
-                    return filter.predicate ? {field: filter.predicate, order: filter.reverse ? 'des' : 'asc'} : {}
+                    return filter.predicate ? {field: filter.predicate, order: filter.reverse ? 'desc' : 'asc'} : {}
                 }
 
                 function getPagination(filter) {
-                    return {page: filter.start / filter.number + 1, pageSize: filter.number}
+                    return {page_index: filter.start / filter.number + 1, entries_per_page: filter.number}
                 }
             },
         };

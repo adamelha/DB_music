@@ -11,6 +11,7 @@ angular.module('BlurAdmin', [
     'smart-table',
     "xeditable",
     'ui.slimscroll',
+    'ngStorage',
     'ngJsTree',
     'angular-progress-button-styles',
     'BlurAdmin.connection',

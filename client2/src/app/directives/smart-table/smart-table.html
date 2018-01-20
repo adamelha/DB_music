@@ -1,13 +1,13 @@
 <div class="row smart-table" ng-init="init()">
     <div class="col-md-12">
         <div ba-panel ba-panel-title="{{panelTitle}}" ba-panel-class="with-scroll">
-            <div ng-if="isButtonsTranscludePresent()" class="add-row-editable-table">
-                <ng-transclude class="transcludedButtons" ng-transclude-slot="buttons"></ng-transclude>
-                <div class="setOfFunctions">
-                    <generic-form fields="setOfFunctionsFields"></generic-form>
-                    <generic-form fields="setOfFiltersFields"></generic-form>
-                </div>
-            </div>
+            <!--<div ng-if="isButtonsTranscludePresent()" class="add-row-editable-table">-->
+            <!--<ng-transclude class="transcludedButtons" ng-transclude-slot="buttons"></ng-transclude>-->
+            <!--<div class="setOfFunctions">-->
+            <!--<generic-form fields="setOfFunctionsFields"></generic-form>-->
+            <!--<generic-form fields="setOfFiltersFields"></generic-form>-->
+            <!--</div>-->
+            <!--</div>-->
             <div class="horizontal-scroll">
                 <div class="form-group select-page-size-wrap">
                     <label>Items Per Page
@@ -22,7 +22,8 @@
                         <th ng-if="setOfFunctionsFields"></th>
                         <th ng-if="leftColumn">{{leftColumn.name}}</th>
 
-                        <th ng-repeat="field in fields | filter: hiddenFilter" st-skip-natural="true" st-sort="{{field.name}}"
+                        <th ng-repeat="field in fields | filter: hiddenFilter" st-skip-natural="true"
+                            st-sort="{{field.name}}"
                             ng-if="!field.isHidden" class="headerField">
                             <span class="tabName">{{field.alias}}<span class="fieldFilter"
                                                                        ng-click="toggleFieldFilter(field,$event)"><i
@@ -51,10 +52,19 @@
                                 </div>
 
                                 <div class="dateWrapper" ng-switch-when="date">
-                                    <div><div>From :</div><bb-datepicker  min-date="minDate" hide-time="true" class="date form-control" date-time="field.filter.value.from"></bb-datepicker></div>
-                                    <div><div>To:</div><bb-datepicker hide-time="true" class="date form-control" date-time="field.filter.value.to"></bb-datepicker></div>
+                                    <div>
+                                        <div>From :</div>
+                                        <bb-datepicker min-date="minDate" hide-time="true" class="date form-control"
+                                                       date-time="field.filter.value.from"></bb-datepicker>
+                                    </div>
+                                    <div>
+                                        <div>To:</div>
+                                        <bb-datepicker hide-time="true" class="date form-control"
+                                                       date-time="field.filter.value.to"></bb-datepicker>
+                                    </div>
 
-                                    <div><i class="fa fa-search" ng-click="getDataFromServer(tableCtrl,null,field)"></i></div>
+                                    <div><i class="fa fa-search" ng-click="getDataFromServer(tableCtrl,null,field)"></i>
+                                    </div>
 
                                 </div>
                                 <div ng-switch-default>
@@ -63,7 +73,8 @@
                                            type="{{(field.type == 'integer' || field.type == 'number') ? 'number' : (field.type ? field.type : 'text')}}"
                                            class="form-control"
                                            ng-required="field._required"
-                                           ng-class="{'input-disabled':!field.editable}">
+                                           ng-class="{'input-disabled':!field.editable}"
+                                    ng-change="updateFilter(tableCtrl,field)">
 
                                     <i class="fa fa-search" ng-click="getDataFromServer(tableCtrl,null,field)"></i>
                                 </div>

@@ -6,7 +6,7 @@
 
     angular.module('BlurAdmin.connection', [])
     //factory for the server connection
-        .factory('ServerConnection', ['$http', '$rootScope', '$q',  function ($http, $rootScope, $q) {
+        .factory('ServerConnection', ['$http', '$rootScope', '$q','$localStorage',  function ($http, $rootScope, $q,$localStorage) {
             var connection =
                 {
                     isLoading: false,
@@ -74,7 +74,7 @@
                         // if (localStorage.getItem("MA_user") && $rootScope.isIos)
                         //     header.cookie = JSON.parse(localStorage.getItem("MA_user")).sessionId;
 
-
+                        $http.defaults.headers.
                         $http({
                             method: method,
                             url: url,
@@ -82,8 +82,8 @@
                             headers: {
                                 'Access-Control-Allow-Credentials': true,
                                //  'Access-Control-Allow-Origin': true,
-                                // Token : $localStorage.User ? $localStorage.User.Token : "",
-                                // UserId: $localStorage.User ? $localStorage.User.UserId : "",
+                                'username' : $localStorage.User ? $localStorage.User.username : "",
+                                'password': $localStorage.User ? $localStorage.User.password : "",
                             }
                         })
                             .then(successFunction,errorFunction)
@@ -97,7 +97,7 @@
         }]).config(
         function ($httpProvider) {
             $httpProvider.defaults.useXDomain = true;
-            $httpProvider.defaults.withCredentials = true; //TODO turn to true on release (CORS fix for dev)
+            $httpProvider.defaults.withCredentials = false; //TODO turn to true on release (CORS fix for dev)
             if (!$httpProvider.defaults.headers.get) {
                 $httpProvider.defaults.headers.get = {};
             }
