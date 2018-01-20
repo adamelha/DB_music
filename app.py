@@ -138,7 +138,7 @@ def login():
 
     return Response(status=200)
 
-@application.route("/getSongs",methods=['POST'])
+@application.route("/songs",methods=['POST'])
 def getTrackList():
     print ('getTracksByArtist!!!!')
     try:
@@ -196,16 +196,19 @@ def getTrackList():
                 FROM Tracks, Artists, Albums
                 WHERE {}{}{}{}Tracks.artist_id = Artists.artist_id and Tracks.album_id = Albums.album_id
                 ORDER BY Tracks.artist_id, Tracks.album_id, track_pos_in_album
-                LIMIT {}, {}
-                '''.format(track_name, artist_name, album_name, only_if_has_lyrics, offset, entries_per_page)
+                '''.format(track_name, artist_name, album_name, only_if_has_lyrics)
 
 
         tracks = execute_sql_command_fetch_all(sql_cmd)
         #print (tracks)
         # Create dictionary for response JSON
-        resp_dict = { 'list' : []}
+        cntr = 0
+
+        resp_dict = { 'list' : [], 'total_rows' : len(tracks)}
         for track in tracks:
-            print (track)
+            if cntr == entries_per_page:
+                break
+
             dict = {'song' : track['track_name'],
                     'artist' : track['artist_name'],
                     'album' : track['album_name'],
@@ -221,6 +224,10 @@ def getTrackList():
         return Response(json.dumps({'error': repr(e)}), status=401)
 
     return Response(json.dumps(resp_dict), status=200)
+
+
+#@application.route("/artists",methods=['POST'])
+#def getArtistList():
 
 
 # This is the main route
