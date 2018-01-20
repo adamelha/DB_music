@@ -18,6 +18,41 @@ IMPORTANT: Make sure that app_config/config.py is configured according to your m
 The app will run on port 4000 browser to http://localhost:4000/
 '''
 
+'''
+Get an sql command and return all the rows
+'''
+def execute_sql_command_fetch_all(cmd):
+    print("Executing sql command:")
+    print(cmd)
+    with con:
+        cur = con.cursor(mdb.cursors.DictCursor)
+        cur.execute(cmd)
+        return cur.fetchall()
+
+class UserNotExistException(Exception):
+    pass
+
+'''
+Validate user based on credentials in the HTTP request headers.
+If the username and password do not match (or not exist) raise a UserNotExistException
+'''
+def validate_user(request):
+    try:
+        userName = request.headers['username']
+        password = request.headers['password']
+        sql_cmd = '''
+                    SELECT user_name, user_password
+                    FROM Users
+                    WHERE user_name='{}' AND user_password='{}'
+                    '''.format(userName, password)
+
+        rows = execute_sql_command_fetch_all(sql_cmd)
+        if len(rows) == 0:
+            raise Exception()
+
+    except Exception as e:
+        print (str(e))
+        raise UserNotExistException("User and password do not match an existing user")
 
 # ADAM: This was added by me
 # If you press the signup button a pop up will pop, after filling the form and pressing Sign Up!
@@ -26,9 +61,8 @@ The app will run on port 4000 browser to http://localhost:4000/
 def signUp():
     print ('signup!!!!')
     try:
-        json_data = request.json['info']
-        userName = json_data['username']
-        password = json_data['password']
+        userName = request.headers['username']
+        password = request.headers['password']
 
         print ('Will now add the following user to the DB')
         print ('userName = {}, password = {}'.format(userName, password))
@@ -59,12 +93,17 @@ def signUp():
 
     return Response(status=200)
 
-@application.route("/login",methods=['POST'])
+@application.route("/login",methods=['OPTIONS'])
 def login():
     print ('login!!!')
-    json_data = request.json
-    userName = json_data['username']
-    password = json_data['password']
+    try:
+        validate_user(request)
+
+    except Exception as e:
+        if isinstance(e, UserNotExistException):
+            return Response(json.dumps({'error': str(e)}), status=401)
+        else:
+            return Response(json.dumps({'error': str(e)}), status=500)
 
     return Response(status=200)
 
