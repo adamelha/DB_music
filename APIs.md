@@ -114,7 +114,7 @@
 					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>', 'lyrics': <song lyrics id (actual lyrics in future> },
 					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>', 'lyrics': <song lyrics id (actual lyrics in future> },
 					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>', 'lyrics': <song lyrics id (actual lyrics in future> },
-					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>', 'lyrics': <song lyrics id (actual lyrics in future> },
+					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>', 'lyrics': <song lyrics id (actual lyrics in future> }
 					...
 				],
 		'total_rows' : <int: The total number of entries passing the filter>
@@ -156,9 +156,7 @@
 	'page_index' : <int: the page number you wish to receive>
 	'filters' : {
 				'name' : '<artist name>',
-				'number_of_albums' : <int: will return all artists with more than number_of_albums albums>,
-				'artist' : '<artist name>',
-				'lyrics' : '<CURRENTLY DOES NOTHING! a substring of the lyrics of a song. If it exists in a song, that song will be in the results>'
+				'number_of_songs' : <int: will return all artists with more than number_of_albums albums>,
 			  }
    }
    ```
@@ -170,12 +168,71 @@
 	```javascript
 	{
 		'list' : [
-					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>', 'lyrics': <song lyrics id (actual lyrics in future> },
-					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>', 'lyrics': <song lyrics id (actual lyrics in future> },
-					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>', 'lyrics': <song lyrics id (actual lyrics in future> },
-					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>', 'lyrics': <song lyrics id (actual lyrics in future> },
+					{ 'name': '<artist name>', 'number_of_songs': <int: number of songs by this artist>},
+					{ 'name': '<artist name>', 'number_of_songs': <int: number of songs by this artist>},
+					{ 'name': '<artist name>', 'number_of_songs': <int: number of songs by this artist>},
+					{ 'name': '<artist name>', 'number_of_songs': <int: number of songs by this artist>}
 					...
-				]
+				],
+		'total_rows' : <int: The total number of entries passing the filter>
+	}
+	```
+* **Error Response:**
+
+  * **Code:** 401 UNAUTHORIZED <br />
+	**Content:** `{ error : "User and password do not match an existing user" }`
+	
+**Get Albums Table**
+----
+  Returns the table of all the albums depending on a filter and number of pages to display.
+  Currently does not check user for debugging simplicity.
+  NOTE: filters are in JSON in the Data Params  
+
+* **URL**
+
+  /albums
+
+* **Method:**
+
+  `POST`
+
+* **HTTP Headers**
+	
+	* **username:** username
+	* **password:** password
+	
+*  **URL Params**
+	
+	None
+   
+* **Data Params**
+
+   ```javascript
+   {
+	'entries_per_page' : <int: How many song entries you wish receive>,
+	'page_index' : <int: the page number you wish to receive>
+	'filters' : {
+				'name' : '<album name>',
+				'artist' : '<artist who released the album>',
+				'number_of_songs' : <int: will return only the albums with at least this number of songs in it>
+			  }
+   }
+   ```
+
+* **Success Response:**
+
+  * **Code:** 200 OK <br />
+    **Content:**
+	```javascript
+	{
+		'list' : [
+					{ 'name': '<album name>', 'artist': '<name of artist who released the album>', 'number_of_songs': <int: number of songs by this artist>},
+					{ 'name': '<album name>', 'artist': '<name of artist who released the album>', 'number_of_songs': <int: number of songs by this artist>},
+					{ 'name': '<album name>', 'artist': '<name of artist who released the album>', 'number_of_songs': <int: number of songs by this artist>},
+					{ 'name': '<album name>', 'artist': '<name of artist who released the album>', 'number_of_songs': <int: number of songs by this artist>}
+					...
+				],
+		'total_rows' : <int: The total number of entries passing the filter>
 	}
 	```
 * **Error Response:**
