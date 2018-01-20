@@ -31,7 +31,7 @@
     </tr>
     </thead>
     <tbody>
-    <tr ng-repeat="item in smartTableData">
+    <tr ng-repeat="item in smartTableData" additional-info-modal data-info="item">
       <td class="table-id">{{item.id}}</td>
       <td>{{item.firstName}}</td>
       <td>{{item.lastName}}</td>

@@ -16,5 +16,6 @@ angular.module('BlurAdmin', [
     'BlurAdmin.connection',
     'BlurAdmin.theme',
     'BlurAdmin.auth',
-    'BlurAdmin.pages'
+    'BlurAdmin.pages',
+    'BlurAdmin.additionalInfoModal'
 ]);
