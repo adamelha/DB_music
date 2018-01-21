@@ -5,10 +5,11 @@
 - [Get Songs Table (or playlist songs table)](#get-songs-table-or-playlist-songs-table-)
 - [Get Artists Table](#get-artists-table)
 - [Get Albums Table](#get-albums-table)
+- [Remove Song from Playlist](#remove-song-from-playlist)
 - [Search (Autocorrect) for Playlist](#search-autocorrect-for-playlist)
-- [Add Song to Playlist](#add-song-to-playlist)
+- [Add Song to New or Existing Playlist](#add-song-to-new-or-existing-playlist)
 - [Get User Playlists](#get-user-playlists)
-
+- [Remove Playlist](#remove-playlist)
 
 ## Sign Up
 ----
@@ -264,7 +265,8 @@
 
   * **Code:** 401 UNAUTHORIZED <br />
   *	**Content:** `{ error : "User and password do not match an existing user" }`
-	
+ 
+ 
 ## Search (Autocorrect) for Playlist
 ----
   Returns an array of `{'playlist_id': <int: id>, 'playlist_name': '<playlist name>'}` where playlist_name is a sub string of an actual playlist of the user
@@ -316,10 +318,11 @@
   *	**Content:** `{ error : "User and password do not match an existing user" }`
 
 
-## Add Song to Playlist
+## Add Song to New or Existing Playlist
 ----
   Adds a song to a user's playlist. This API is called after *Search (Autocorrect) for Playlist* API* when user decides on playlist.
-
+  If the playlist does not exist, a new playlist with this song will be created.
+  
  * **URL**
 
   /addToPlaylist
@@ -342,7 +345,7 @@
    {
     'username' : '<username>',
 	'password' : '<password>',
-	'playlist_id' : <int: The id of the playlist chosen by the previous API>
+	'playlist_name' : '<int: The name of the playlist chosen (existing or non existing>'
 	'track_id' : <int: The id of the specific song the user chooses from the songs table (the /songs route)>
    }
    ```
@@ -354,7 +357,90 @@
 
   * **Code:** 401 UNAUTHORIZED <br />
   *	**Content:** `{ error : "User and password do not match an existing user" }`
+
+
+## Remove Song from Playlist
+----
+  Removes a song from an existing playlist.
+  If all songs are removed, playlist will be deleted.
+
+ * **URL**
+
+  /removeSongFromPlaylist
+
+* **Method:**
+
+  `POST`
+
+* **HTTP Headers**
 	
+	None
+	
+*  **URL Params**
+	
+	None
+   
+* **Data Params**
+
+   ```javascript
+   {
+    'username' : '<username>',
+	'password' : '<password>',
+	'playlist_name' : '<name for the new playlist>',
+	'track_id' : <int: The id of the specific song the user chooses from the songs table (the /songs route of a playlist display)>
+   }
+   ```
+
+* **Success Response:**
+
+  * **Code:** 200 OK <br />
+  
+* **Error Response:**
+
+  * **Code:** 401 UNAUTHORIZED <br />
+  *	**Content:** `{ error : "User and password do not match an existing user" }`
+
+  
+## Remove Playlist
+----
+  Removes a users playlist including all the songs.
+
+ * **URL**
+
+  /removePlaylist
+
+* **Method:**
+
+  `POST`
+
+* **HTTP Headers**
+	
+	None
+	
+*  **URL Params**
+	
+	None
+   
+* **Data Params**
+
+   ```javascript
+   {
+    'username' : '<username>',
+	'password' : '<password>',
+	'playlist_name' : '<name of the playlist to be removed>'
+   }
+   ```
+
+* **Success Response:**
+
+  * **Code:** 200 OK <br />
+  
+* **Error Response:**
+
+  * **Code:** 401 UNAUTHORIZED <br />
+  *	**Content:** `{ error : "User and password do not match an existing user" }`
+
+
 ## Get User Playlists
 ----
   This is called when the user wishes to display his playlists. The page will be a list of buttons representing each playlist.
@@ -398,6 +484,7 @@
 					{'playlist_id': <int: id>, 'playlist_name': '<playlist name corresponding to user>'},
 					...
 				]
+		
 	}
 	```
 * **Error Response:**

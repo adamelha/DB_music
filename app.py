@@ -37,8 +37,20 @@ def execute_sql_command_fetch_all(cmd):
         return cur.fetchall()
 
 '''
+Get an sql command raise exception if failed
+'''
+def execute_sql_command_no_fetch(cmd):
+    print("Executing sql command:")
+    print(cmd)
+    with con:
+        cur = con.cursor(mdb.cursors.DictCursor)
+        cur.execute(cmd)
+
+
+'''
 Validate user based on credentials in the JSON in the body of the request
 If the username and password do not match (or not exist) raise a UserNotExistException
+Returns the user id
 '''
 def validate_user(request):
     try:
@@ -48,18 +60,21 @@ def validate_user(request):
             raise Exception()
 
         sql_cmd = '''
-                    SELECT user_name, user_password
+                    SELECT user_id, user_name, user_password
                     FROM Users
                     WHERE user_name='{}' AND user_password='{}'
                     '''.format(userName, password)
 
         rows = execute_sql_command_fetch_all(sql_cmd)
-        if len(rows) == 0:
+
+        if len(rows) != 1:
             raise Exception()
 
     except Exception as e:
         print (str(e))
         raise UserNotExistException("User and password do not match an existing user")
+
+    return rows[0]['user_id']
 
 '''
 Assert that a username in a request does not exist in the Users DB.
@@ -128,6 +143,10 @@ def signUp():
 
     return Response(status=200)
 
+'''
+Log in to an account.
+Retuns 200 if user-password combination exists.
+'''
 @application.route("/login",methods=['OPTIONS'])
 def login():
     print ('login!!!')
@@ -147,9 +166,9 @@ def getTrackList():
     print ('songs!!!!')
     try:
         order_field_mapping = {'name' : 'track_name', 'album' : 'album_name', 'artist' : 'artist_name'}
-        print request
+        print (request)
         json_data = request.get_json()
-        print json_data
+        print (json_data)
 
         entries_per_page = json_data['entries_per_page']
         page_index = json_data['page_index']
@@ -237,9 +256,9 @@ def getAlbumsList():
     print ('albums!!!!')
     try:
         order_field_mapping = {'name': 'album_name', 'artist': 'artist_name', 'number_of_songs': 'track_count'}
-        print request
+        print (request)
         json_data = request.get_json()
-        print json_data
+        print (json_data)
 
         entries_per_page = json_data['entries_per_page']
         page_index = json_data['page_index']
@@ -317,9 +336,9 @@ def getArtistsList():
     print ('albums!!!!')
     try:
         order_field_mapping = {'name': 'artist_name', 'number_of_songs': 'artist_track_count'}
-        print request
+        print (request)
         json_data = request.get_json()
-        print json_data
+        print (json_data)
 
         entries_per_page = json_data['entries_per_page']
         page_index = json_data['page_index']
@@ -397,9 +416,59 @@ def getArtistsList():
         print(resp_dict)
 
     except Exception as e:
-        return Response(json.dumps({'error': repr(e)}), status=401)
+        return Response(json.dumps({'error': str(e)}), status=401)
 
     return Response(json.dumps(resp_dict), status=200)
+
+
+@application.route("/addToPlaylist",methods=['POST'])
+def addToPlaylist():
+    try:
+        user_id = validate_user(request)
+        print (user_id)
+        print (request)
+        json_data = request.get_json()
+        print (json_data)
+
+        if json_data['track_id'] is None or json_data['playlist_name'] is None:
+            raise Exception('Missing parameters in body of request')
+
+        sql_cmd = '''
+                    INSERT INTO Playlists
+                    values({}, "{}", {})
+                    '''.format(user_id, json_data['playlist_name'], json_data['track_id'])
+
+        execute_sql_command_no_fetch(sql_cmd)
+
+    except Exception as e:
+        return Response(json.dumps({'error': str(e)}), status=401)
+
+    return Response(status=200)
+
+
+@application.route("/removeFromPlaylist",methods=['POST'])
+def removeFromPlaylist():
+    try:
+        user_id = validate_user(request)
+
+        print (request)
+        json_data = request.get_json()
+        print (json_data)
+
+        if json_data['track_id'] is None or json_data['playlist_name'] is None:
+            raise Exception('Missing parameters in body of request')
+
+        sql_cmd = '''
+                    DELETE FROM Playlists
+                    WHERE user_id={} AND playlist_name="{}" AND track_id={}
+                    '''.format(user_id, json_data['playlist_name'], json_data['track_id'])
+
+        execute_sql_command_no_fetch(sql_cmd)
+
+    except Exception as e:
+        return Response(json.dumps({'error': str(e)}), status=401)
+
+    return Response(status=200)
 
 
 # This is the main route
