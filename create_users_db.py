@@ -1,6 +1,8 @@
 import MySQLdb as mdb
 from app_config.config import CONFIG
 import musixmatch
+from vohLyrics.voh import get_lyrics
+
 '''
 This file creates a simple mysql users database.
 IMPORTANT: Make sure that app_config/config.py is configured according to your mysql server credentials!
@@ -138,8 +140,6 @@ def create_albums_table():
             for album in jsonobj["message"]["body"]["album_list"]:
 
                 #insert this record to the DB if and only if it's not already there
-                print(str(album["album"]["album_name"]))
-                print(type(album["album"]["album_name"]))
                 sql_cmd = '''
                         INSERT INTO Albums (album_id, album_name, artist_id, track_count)
                         SELECT * FROM (SELECT "{}", "{}", "{}", "{}") AS tmp
@@ -173,7 +173,7 @@ def create_tracks_table():
                     track_pos_in_album int NOT NULL,
                     album_id int NOT NULL,
                     artist_id int NOT NULL,
-                    lyrics_id int,
+                    lyrics TEXT NOT NULL,
                     PRIMARY KEY (track_id)
                     )
                     '''
@@ -183,7 +183,9 @@ def create_tracks_table():
         MusixMatch = musixmatch.Musixmatch()
 
         # add to the DB all the tracks of all the albums in the DB
-        cur.execute('SELECT artist_id, album_id, track_count FROM Albums')
+        cur.execute('''SELECT Artists.artist_id, artist_name, album_id, track_count
+                       FROM Artists, Albums
+                       WHERE Artists.artist_id = Albums.artist_id''')
         albumsList = cur.fetchall()
         for album in albumsList:
             jsonobj = MusixMatch.album_tracks_get(album["album_id"], 1, album["track_count"])
@@ -191,17 +193,20 @@ def create_tracks_table():
             for track in jsonobj["message"]["body"]["track_list"]:
 
                 # calculate the track position in the album
-                track_pos_in_album += 1 
+                track_pos_in_album += 1
+
+                #call lyrics.voh to get the tracks lirics
+                lyrics = get_lyrics(album['artist_name'] ,track["track"]["track_name"])
 
                 #insert this record to the DB if and only if it's not already there
                 sql_cmd = '''
-                        INSERT INTO Tracks (track_id, track_name, track_length, track_pos_in_album, album_id, artist_id, lyrics_id)
+                        INSERT INTO Tracks (track_id, track_name, track_length, track_pos_in_album, album_id, artist_id, lyrics)
                         SELECT * FROM (SELECT "{}", "{}", "{}", "{}", "{}", "{}", "{}") AS tmp
                         WHERE NOT EXISTS (SELECT track_id FROM Tracks WHERE track_id = "{}")
                         '''.format(track["track"]["track_id"], str(track["track"]["track_name"]),
                                    track["track"]["track_length"], track_pos_in_album,
                                    album["album_id"], album["artist_id"],
-                                   track["track"]["lyrics_id"], track["track"]["track_id"])
+                                   lyrics, track["track"]["track_id"])
                 try:
                     cur.execute(sql_cmd)
                 except Exception as e:
