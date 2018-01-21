@@ -7,6 +7,6 @@ def get_lyrics(artist, title):
     request = Request("https://api.lyrics.ovh/v1/" + artist.replace(' ', '-') + "/" + title.replace(' ', '-'))
 
     try:
-        return json.loads(urlopen(request).read().decode())['lyrics']
+        return (json.loads(urlopen(request).read().decode())['lyrics']).replace('"', '')
     except (HTTPError, UnicodeEncodeError):
         return "sorry, lyrics for this track are not available"
