@@ -166,6 +166,9 @@ def getTrackList():
     print ('songs!!!!')
     try:
         order_field_mapping = {'name' : 'track_name', 'album' : 'album_name', 'artist' : 'artist_name'}
+
+        user_id = validate_user(request)
+
         print (request)
         json_data = request.get_json()
         print (json_data)
@@ -215,12 +218,23 @@ def getTrackList():
 
         print ('Get a tracks list filtered by artist name and/or album name')
 
-        sql_cmd = '''
-                SELECT track_name, album_name, artist_name, lyrics_id
-                FROM Tracks, Artists, Albums
-                WHERE {}{}{}{}Tracks.artist_id = Artists.artist_id and Tracks.album_id = Albums.album_id
-                ORDER BY {} {}
-                '''.format(track_name, artist_name, album_name, only_if_has_lyrics, order_field_mapping[json_data['field']], json_data['order'])
+        # Check wheather displaying a playlist or not
+        if 'playlist_name' in json_data:
+
+            sql_cmd = '''
+                    SELECT PlaylistTracks.track_name AS track_name, album_name, artist_name, PlaylistTracks.lyrics_id as lyrics_id
+                    FROM Artists, Albums, (SELECT Tracks.*
+                                            FROM Playlists, Tracks
+                                            WHERE user_id = {} and playlist_name = "{}" and Playlists.track_id = Tracks.track_id) AS PlaylistTracks
+                    WHERE {}{}{}{}PlaylistTracks.artist_id = Artists.artist_id and PlaylistTracks.album_id = Albums.album_id
+                    '''.format(user_id, json_data['playlist_name'], track_name, artist_name, album_name, only_if_has_lyrics)
+        else:
+            sql_cmd = '''
+                    SELECT track_name, album_name, artist_name, lyrics_id
+                    FROM Tracks, Artists, Albums
+                    WHERE {}{}{}{}Tracks.artist_id = Artists.artist_id and Tracks.album_id = Albums.album_id
+                    ORDER BY {} {}
+                    '''.format(track_name, artist_name, album_name, only_if_has_lyrics, order_field_mapping[json_data['field']], json_data['order'])
 
 
         tracks = execute_sql_command_fetch_all(sql_cmd)
@@ -469,6 +483,80 @@ def removeFromPlaylist():
         return Response(json.dumps({'error': str(e)}), status=401)
 
     return Response(status=200)
+
+@application.route("/removePlaylist",methods=['POST'])
+def removePlaylist():
+    try:
+        user_id = validate_user(request)
+
+        print (request)
+        json_data = request.get_json()
+        print (json_data)
+
+        if json_data['playlist_name'] is None:
+            raise Exception('Missing parameters in body of request')
+
+        sql_cmd = '''
+                    DELETE FROM Playlists
+                    WHERE user_id={} AND playlist_name="{}"
+                    '''.format(user_id, json_data['playlist_name'])
+
+        execute_sql_command_no_fetch(sql_cmd)
+
+    except Exception as e:
+        return Response(json.dumps({'error': str(e)}), status=401)
+
+    return Response(status=200)
+
+
+@application.route("/playlists",methods=['POST'])
+def getPlaylists():
+    print ('playlists!!!!')
+    try:
+        order_field_mapping = {'name': 'playlist_name', 'number_of_songs': 'track_count'}
+        user_id = validate_user(request)
+
+        print (request)
+        json_data = request.get_json()
+        print (json_data)
+
+        entries_per_page = json_data['entries_per_page']
+        page_index = json_data['page_index']
+
+        if entries_per_page is None or not isinstance(entries_per_page, int) \
+                or page_index is None or not isinstance(page_index, int):
+            raise Exception("Bad entries_per_page or page_index")
+
+        offset = page_index * entries_per_page
+
+        sql_cmd = '''
+                    SELECT playlist_name, COUNT(*) AS track_count
+                    FROM Playlists
+                    WHERE user_id = {}
+                    GROUP BY user_id, playlist_name
+                    ORDER BY {} {}
+                    '''.format(user_id, order_field_mapping[json_data['field']], json_data['order'])
+
+        playlists = execute_sql_command_fetch_all(sql_cmd)
+
+        resp_dict = {'list': [], 'total_rows': len(playlists)}
+        for i in range(offset, offset + entries_per_page):
+            if i >= len(playlists):
+                break
+
+            dict = {'name': playlists[i]['playlist_name'],
+                    'number_of_songs': playlists[i]['track_count']
+                    }
+            # Append entry to response
+            resp_dict['list'].append(dict)
+
+        print('Returning the following list')
+        print(resp_dict)
+
+    except Exception as e:
+        return Response(json.dumps({'error': str(e)}), status=401)
+
+    return Response(json.dumps(resp_dict), status=200)
 
 
 # This is the main route

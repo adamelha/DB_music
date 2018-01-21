@@ -90,8 +90,8 @@
 ## Get Songs Table (or playlist songs table)
 ----
   Returns the table of all the songs depending on a filter and number of pages to display.
-  * If 'playlist_id' is defined in the body - then display the songs from that playlist.
-  * If 'playlist_id' is not defined in the body - then display from regular database
+  * If 'playlist_name' is defined in the body - then display the songs from that playlist.
+  * If 'playlist_name' is not defined in the body - then display from regular database
   
   NOTE: filters are in JSON in the Data Params  
 
@@ -119,7 +119,9 @@
 	'password' : '<password>',
 	'entries_per_page' : <int: How many song entries you wish receive>,
 	'page_index' : <int: the page number you wish to receive>
-	'playlist_id' : <int: If displaying a playlist, this will be the id of the playlist to display>
+	'playlist_name' : '<name of a playlist belonging to the user>',
+	'order' : '<"desc" or "asc" for descending or ascending order>',
+	'field' : '<The field of which the data will be sorted>',
 	'filters' : {
 				'name' : '<song name>',
 				'album' : '<album name>',
@@ -178,7 +180,9 @@
     'username' : '<username>',
 	'password' : '<password>',
 	'entries_per_page' : <int: How many song entries you wish receive>,
-	'page_index' : <int: the page number you wish to receive>
+	'page_index' : <int: the page number you wish to receive>,
+	'order' : '<"desc" or "asc" for descending or ascending order>',
+	'field' : '<The field of which the data will be sorted>',
 	'filters' : {
 				'name' : '<artist name>',
 				'number_of_songs' : <int: will return all artists with more than number_of_albums albums>,
@@ -236,7 +240,9 @@
     'username' : '<username>',
 	'password' : '<password>',
 	'entries_per_page' : <int: How many song entries you wish receive>,
-	'page_index' : <int: the page number you wish to receive>
+	'page_index' : <int: the page number you wish to receive>,
+	'order' : '<"desc" or "asc" for descending or ascending order>',
+	'field' : '<The field of which the data will be sorted>',
 	'filters' : {
 				'name' : '<album name>',
 				'artist' : '<artist who released the album>',
@@ -444,8 +450,8 @@
 ## Get User Playlists
 ----
   This is called when the user wishes to display his playlists. The page will be a list of buttons representing each playlist.
-  Returns a list of `{'playlist_id': <int: id>, 'playlist_name': '<playlist name>'}` corresponding to the playlists that belong to the user.
-  This way the client can display buttons for each playlist.
+  Returns a list of `{'name': '<playlist name>', 'number_of_songs' : <int: # songs in playlist>}` corresponding to the playlists that belong to the user.
+  This way the playlists can be displayed in the same way as songs/artists/albums
 
  * **URL**
 
@@ -469,6 +475,10 @@
    {
     'username' : '<username>',
 	'password' : '<password>',
+	'entries_per_page' : <int: How many song entries you wish receive>,
+	'page_index' : <int: the page number you wish to receive>,
+	'order' : '<"desc" or "asc" for descending or ascending order>',
+	'field' : '<The field of which the data will be sorted: "name" or "number_of_songs">'
    }
    ```
 
@@ -479,12 +489,12 @@
 	```javascript
 	{
 		'list' : [
-					{'playlist_id': <int: id>, 'playlist_name': '<playlist name corresponding to user>'},
-					{'playlist_id': <int: id>, 'playlist_name': '<playlist name corresponding to user>'},
-					{'playlist_id': <int: id>, 'playlist_name': '<playlist name corresponding to user>'},
+					{'name': '<playlist name corresponding to user>', 'number_of_songs' : <int: Number of songs in this playlist>},
+					{'name': '<playlist name corresponding to user>', 'number_of_songs' : <int: Number of songs in this playlist>},
+					{'name': '<playlist name corresponding to user>', 'number_of_songs' : <int: Number of songs in this playlist>},
 					...
 				]
-		
+		'total_rows' : <int: The total number of playlists for the user>
 	}
 	```
 * **Error Response:**
