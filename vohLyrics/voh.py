@@ -1,12 +1,16 @@
-from urllib.request import urlopen, Request
-from urllib.error import HTTPError
+from six.moves import urllib
+import urllib2
+#from urllib.request import urlopen, Request
+from urllib2 import HTTPError
+
 import json
 
 def get_lyrics(artist, title):
     
-    request = Request("https://api.lyrics.ovh/v1/" + artist.replace(' ', '-') + "/" + title.replace(' ', '-'))
+    request = urllib2.Request("https://api.lyrics.ovh/v1/" + artist.replace(' ', '-') + "/" + title.replace(' ', '-'))
 
     try:
-        return (json.loads(urlopen(request).read().decode())['lyrics'])
-    except (HTTPError, UnicodeEncodeError):
+        return (json.loads(urllib2.urlopen(request).read().decode())['lyrics'])
+    except (HTTPError, UnicodeEncodeError, UnicodeDecodeError) as e:
         return "sorry, lyrics for this track are not available"
+

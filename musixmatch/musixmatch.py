@@ -1,10 +1,11 @@
-import urllib.request, urllib.error, urllib.parse
-import urllib3
+from six.moves import urllib
+#import urllib.request, urllib.error, urllib.parse
+#import urllib3
 import requests
 import json
 import socket
 import random
-from musixmatch.utils import _set_page_size
+from utils import _set_page_size
 
 apikey_musixmatch = '7bafb0b94f50984fe62a2964baa28b2e'
 apiurl_musixmatch = 'http://api.musixmatch.com/ws/1.1/'
@@ -130,30 +131,7 @@ class Musixmatch(object):
 
     def track_search(self, q_track, q_artist, page_size, page,
                      s_track_rating, _format='json'):
-        ''' Search for track in our database.
-        Parameters:
-        q_track - The song title.
-        q_artist - The song artist.
-        q_lyrics - Any word in the lyrics.
-        f_artist_id - When set, filter by this artist id.
-        f_music_genre_id - When set, filter by this music category id.
-        f_lyrics_language - Filter by the lyrics language (en,it,..).
-        f_has_lyrics - When set, filter only contents with lyrics.
-        f_track_release_group_first_release_date_min - When set, filter
-        the tracks with release date newer than value, format is YYYYMMDD.
-        f_track_release_group_first_release_date_max - When set, filter
-        the tracks with release date older than value, format is YYYYMMDD.
-        s_artist_rating - Sort by our popularity index for artists (asc|desc).
-        s_track_rating - Sort by our popularity index for tracks (asc|desc).
-        quorum_factor - Search only a part of the given query string.
-        Allowed range is (0.1 – 0.9).
-        page - Define the page number for paginated results.
-        page_size - Define the page size for paginated results.
-        Range is 1 to 100.
-        callback - jsonp callback.
-        format - Decide the output type json or xml (default json).
-        Note: This method requires a commercial plan.
-        '''
+
         data = self._request(self._get_url('track.search?'
                                            'q_track={}&q_artist={}'
                                            '&page_size={}'
@@ -167,15 +145,7 @@ class Musixmatch(object):
 
     def track_get(self, track_id, commontrack_id=None,
                   track_isrc=None, track_mbid=None, _format='json'):
-        ''' Get a track info from our database:
-        title, artist, instrumental flag and cover art.
-        Parameters:
-        track_id - The musiXmatch track id.
-        commontrack_id - The musiXmatch commontrack id.
-        track_isrc - A valid ISRC identifier.
-        track_mbid - The musicbrainz recording id.
-        format - Decide the output type json or xml (default json).
-        '''
+
         data = self._request(self._get_url('track.get?'
                                            'track_id={}&commontrack_id={}'
                                            '&track_isrc={}&track_mbid={}'
@@ -200,14 +170,7 @@ class Musixmatch(object):
         return data
 
     def track_snippet_get(self, track_id, _format='json'):
-        ''' Get the snippet for a given track.
-        A lyrics snippet is a very short representation of a song lyrics.
-        It’s usually twenty to a hundred characters long and it’s calculated
-        extracting a sequence of words from the lyrics.
-        Parameters:
-        track_id - The musiXmatch track id.
-        format - Decide the output type json or xml (default json).
-        '''
+
         data = self._request(self._get_url('track.snippet.get?'
                                            'track_id={}&format={}'
                                            .format(track_id, _format)))
@@ -272,21 +235,7 @@ class Musixmatch(object):
 
     def track_lyrics_post(self, track_id,
                           lyrics_body, _format='json'):
-        ''' Submit a lyrics to our database.
-            It may happen we don’t have the lyrics for a song,
-            you can ask your users to help us sending the missing
-            lyrics. We’ll validate every submission and in case, make
-            it available through our api.
-            Please take all the necessary precautions to avoid users
-            or automatic software to use your website/app to use this
-            commands, a captcha solution like http://www.google.com/recaptcha
-            or an equivalent one has to be implemented in every user
-            interaction that ends in a POST operation on the musixmatch api.
-            Parameters:
-            track_id - A valid country code (default US)
-            lyrics_body - The lyrics
-            formatDecide the output type json or xml (default json)
-        '''
+
         data = self._request(self._get_url('track.lyrics.post?track_id={}'
                                            '&lyrics_body={}&format={}'
                                            .format(track_id, lyrics_body,
@@ -336,19 +285,7 @@ class Musixmatch(object):
         return data
 
     def matcher_track_get(self, q_track, q_artist, _format='json'):
-        ''' Match your song against our database.
-            In some cases you already have some informations
-            about the track title, artist name, album etc.
-            A possible strategy to get the corresponding lyrics could be:
-            - search our catalogue with a perfect match,
-            - maybe try using the fuzzy search,
-            - maybe try again using artist aliases, and so on.
-            The matcher.track.get method does all the job for you in
-            a single call. This way you dont’t need to worry about the
-            details, and you’ll get instant benefits for your application
-            without changing a row in your code, while we take care of
-            improving the implementation behind. Cool, uh?
-        '''
+
         data = self._request(self._get_url('matcher.track.get?'
                                            'q_track={}&q_artist={}'
                                            '&format={}'
@@ -496,17 +433,7 @@ class Musixmatch(object):
         return data
 
     def tracking_url_get(self, domain, _format='json'):
-        ''' Get the base url for the tracking script
-            With this api you’ll be able to get the base
-            url for the tracking script you need to insert in
-            your page to legalize your existent lyrics library.
-            Read more here: rights-clearance-on-your-existing-catalog
-            In case you’re fetching the lyrics by the musiXmatch api
-            called track.lyrics.get you don’t need to implement this API call.
-            Parameters:
-            domain - Your domain name.
-            format - Decide the output type json or xml (default json).
-        '''
+
         data = self._request(self._get_url('tracking.url.get?'
                                            'domain={}&format={}'
                                            .format(domain, _format)))
