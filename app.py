@@ -145,7 +145,7 @@ def signUp():
 
 '''
 Log in to an account.
-Retuns 200 if user-password combination exists.
+Returns 200 if user-password combination exists.
 '''
 @application.route("/login",methods=['OPTIONS'])
 def login():
@@ -227,7 +227,8 @@ def getTrackList():
                                             FROM Playlists, Tracks
                                             WHERE user_id = {} and playlist_name = "{}" and Playlists.track_id = Tracks.track_id) AS PlaylistTracks
                     WHERE {}{}{}{}PlaylistTracks.artist_id = Artists.artist_id and PlaylistTracks.album_id = Albums.album_id
-                    '''.format(user_id, json_data['playlist_name'], track_name, artist_name, album_name, only_if_has_lyrics)
+                    ORDER BY {} {}
+                    '''.format(user_id, json_data['playlist_name'], track_name, artist_name, album_name, only_if_has_lyrics, order_field_mapping[json_data['field']], json_data['order'])
         else:
             sql_cmd = '''
                     SELECT track_name, album_name, artist_name, lyrics_id
