@@ -10,7 +10,7 @@
             var connection =
                 {
                     isLoading: false,
-                    serverUrl: 'http://127.0.0.1:4000',//TODO add port
+                    serverUrl: 'http://localhost:4000',//TODO add port
 
                     dataToUrl: function (data) {
                         let andUri = "?";
