@@ -145,7 +145,7 @@
 
                     //
                     let reqResult;
-                    if ($scope.mockItems && false) {
+                    if ($scope.mockItems ) {
                         reqResult = returnMock();
                     }
                     else{

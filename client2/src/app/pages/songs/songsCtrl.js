@@ -32,11 +32,19 @@
             }
         ];
 
-        function showModal(row) {
+        $scope.updateSelect=(text)=>{
+            $scope.playlists=[{name:'a'},{name:'b'}]
+            // ServerConnection.sendPost('/searchPlaylist',{search:text}).then((r)=>{
+            //     $scope.playlists=r.list;
+            // })
+        }
+
+        function showModal(song) {
             $uibModal.open({
                 animation: true,
                 templateUrl: 'app/pages/songs/addToPlaylist.modal.html',
                 size: 'sm',
+                scope:$scope,
                 resolve: {
                     items: function () {
                         return $scope.items;

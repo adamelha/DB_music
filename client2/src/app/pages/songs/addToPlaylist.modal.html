@@ -17,7 +17,7 @@
                 <span> {{$select.selected.value}}</span>
             </ui-select-match>
             <ui-select-choices ng-hide="!$select.open"
-                               repeat="option.name as option in playlists | filter: $select.search">
+                               repeat="option.name as option in playlists">
                 <span ng-bind-html="option.name"></span>
             </ui-select-choices>
         </ui-select>

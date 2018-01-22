@@ -9,7 +9,7 @@
                 $scope.signIn = () => {
                     const inserted = getUserAndPassInput();
                     $localStorage.User = inserted;
-                    ServerConnection.sendGet("/login",inserted,false,loginSuccessHandler,loginErrHandler);
+                    ServerConnection.sendPost("/login",inserted,false,loginSuccessHandler,loginErrHandler);
                 };
                 $scope.signUp = () => {
                     $state.go("signup") //TODO not implemented
