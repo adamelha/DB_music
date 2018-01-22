@@ -54,21 +54,16 @@ Returns the user id
 '''
 def validate_user(request):
     try:
-        userName = request.args.get('username')
-        password = request.args.get('password')
-
+        userName = request.json['username']
+        password = request.json['password']
         if userName is None or password is None:
-            userName = request.json('username')
-            password = request.json('password')
-            if userName is None or password is None:
-                raise Exception()
+            raise Exception()
 
         sql_cmd = '''
                     SELECT user_id, user_name, user_password
                     FROM Users
                     WHERE user_name='{}' AND user_password='{}'
                     '''.format(userName, password)
-
         rows = execute_sql_command_fetch_all(sql_cmd)
 
         if len(rows) != 1:
@@ -86,11 +81,9 @@ If it does, raise a UserExistsException
 '''
 def validate_user_does_not_exist(request):
     try:
-        userName = request.args.get['username']
+        userName = request.json['username']
         if userName is None:
-            userName = request.json('username')
-            if userName is None:
-                raise Exception()
+            raise Exception()
 
         sql_cmd = '''
                     SELECT user_name
@@ -147,7 +140,7 @@ def signUp():
         else:
             return Response(json.dumps({'error': str(e)}), status=500)
 
-    return Response(status=200)
+    return Response(status=200 )
 
 '''
 Log in to an account.
@@ -177,7 +170,13 @@ def getTrackList():
 
         print (request)
         json_data = request.get_json()
+
         print (json_data)
+
+        if not 'field' in json_data:
+            json_data['field'] = 'album'
+        if not 'order' in json_data:
+            json_data['order'] = 'asc'
 
         entries_per_page = json_data['entries_per_page']
         page_index = json_data['page_index']
@@ -185,7 +184,7 @@ def getTrackList():
         if entries_per_page is None or not isinstance(entries_per_page, int)\
                 or page_index is None or not isinstance(page_index, int):
             raise Exception("Bad entries_per_page or page_index")
-
+        page_index -= 1
         offset = page_index * entries_per_page
 
         # Make sure 'filters' is a key in the JSON
@@ -196,8 +195,8 @@ def getTrackList():
         #json_data = {'artist_name' : "", 'album_name' : "", 'only_if_has_lyrics' : 1}
 
         # artist name to filter by, if an empty string is recived no filtering by artist will be made
-        if ('song' in filters):
-            track_name = 'track_name = "{}" and '.format(filters['song'])
+        if ('name' in filters):
+            track_name = 'track_name = "{}" and '.format(filters['name'])
         else:
             track_name = ""
 
@@ -254,7 +253,7 @@ def getTrackList():
             if i >= len(tracks):
                 break
 
-            dict = {'song' : tracks[i]['track_name'],
+            dict = {'name' : tracks[i]['track_name'],
                     'track_id' : tracks[i]['track_id'],
                     'artist' : tracks[i]['artist_name'],
                     'album' : tracks[i]['album_name']
@@ -269,6 +268,7 @@ def getTrackList():
         print('good')
 
     except Exception as e:
+        print repr(e)
         return Response(json.dumps({'error': repr(e)}), status=401)
 
     return Response(json.dumps(resp_dict), status=200)
@@ -284,6 +284,11 @@ def getAlbumsList():
         json_data = request.get_json()
         print (json_data)
 
+        if not 'field' in json_data:
+            json_data['field'] = 'name'
+        if not 'order' in json_data:
+            json_data['order'] = 'asc'
+
         entries_per_page = json_data['entries_per_page']
         page_index = json_data['page_index']
 
@@ -291,6 +296,7 @@ def getAlbumsList():
                 or page_index is None or not isinstance(page_index, int):
             raise Exception("Bad entries_per_page or page_index")
 
+        page_index -= 1
         offset = page_index * entries_per_page
 
         # Make sure 'filters' is a key in the JSON
@@ -365,13 +371,18 @@ def getArtistsList():
         json_data = request.get_json()
         print (json_data)
 
+        if not 'field' in json_data:
+            json_data['field'] = 'name'
+        if not 'order' in json_data:
+            json_data['order'] = 'asc'
+
         entries_per_page = json_data['entries_per_page']
         page_index = json_data['page_index']
 
         if entries_per_page is None or not isinstance(entries_per_page, int) \
                 or page_index is None or not isinstance(page_index, int):
             raise Exception("Bad entries_per_page or page_index")
-
+        page_index -= 1
         offset = page_index * entries_per_page
 
         # Make sure 'filters' is a key in the JSON
