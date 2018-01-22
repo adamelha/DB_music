@@ -6,7 +6,7 @@ import socket
 import random
 from musixmatch.utils import _set_page_size
 
-apikey_musixmatch = 'c2eece1975ce127fdff14e0d8238afe4'
+apikey_musixmatch = '7bafb0b94f50984fe62a2964baa28b2e'
 apiurl_musixmatch = 'http://api.musixmatch.com/ws/1.1/'
 
 def find_id(search_term):

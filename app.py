@@ -54,10 +54,14 @@ Returns the user id
 '''
 def validate_user(request):
     try:
-        userName = request.json['username']
-        password = request.json['password']
+        userName = request.args.get('username')
+        password = request.args.get('password')
+
         if userName is None or password is None:
-            raise Exception()
+            userName = request.json('username')
+            password = request.json('password')
+            if userName is None or password is None:
+                raise Exception()
 
         sql_cmd = '''
                     SELECT user_id, user_name, user_password
@@ -82,9 +86,11 @@ If it does, raise a UserExistsException
 '''
 def validate_user_does_not_exist(request):
     try:
-        userName = request.json['username']
+        userName = request.args.get['username']
         if userName is None:
-            raise Exception()
+            userName = request.json('username')
+            if userName is None:
+                raise Exception()
 
         sql_cmd = '''
                     SELECT user_name
@@ -104,7 +110,7 @@ def validate_user_does_not_exist(request):
 Insert a user into the database only if the user does not exist.
 Otherwise return user exists error
 '''
-@application.route("/signUp",methods=['POST'])
+@application.route("/signUp",methods=['POST', 'OPTIONS'])
 def signUp():
     print ('signup!!!!')
     try:
@@ -147,7 +153,7 @@ def signUp():
 Log in to an account.
 Returns 200 if user-password combination exists.
 '''
-@application.route("/login",methods=['OPTIONS'])
+@application.route("/login",methods=['POST', 'OPTIONS'])
 def login():
     print ('login!!!')
     try:
@@ -222,7 +228,7 @@ def getTrackList():
         if 'playlist_name' in json_data:
 
             sql_cmd = '''
-                    SELECT PlaylistTracks.track_name AS track_name, album_name, artist_name, PlaylistTracks.lyrics_id as lyrics_id
+                    SELECT PlaylistTracks.track_id, PlaylistTracks.track_name AS track_name, album_name, artist_name
                     FROM Artists, Albums, (SELECT Tracks.*
                                             FROM Playlists, Tracks
                                             WHERE user_id = {} and playlist_name = "{}" and Playlists.track_id = Tracks.track_id) AS PlaylistTracks
@@ -231,7 +237,7 @@ def getTrackList():
                     '''.format(user_id, json_data['playlist_name'], track_name, artist_name, album_name, only_if_has_lyrics, order_field_mapping[json_data['field']], json_data['order'])
         else:
             sql_cmd = '''
-                    SELECT track_name, album_name, artist_name, lyrics_id
+                    SELECT track_id, track_name, album_name, artist_name
                     FROM Tracks, Artists, Albums
                     WHERE {}{}{}{}Tracks.artist_id = Artists.artist_id and Tracks.album_id = Albums.album_id
                     ORDER BY {} {}
@@ -249,9 +255,9 @@ def getTrackList():
                 break
 
             dict = {'song' : tracks[i]['track_name'],
+                    'track_id' : tracks[i]['track_id'],
                     'artist' : tracks[i]['artist_name'],
-                    'album' : tracks[i]['album_name'],
-                    'lyrics' : tracks[i]['lyrics_id']
+                    'album' : tracks[i]['album_name']
                     }
 
             # Append entry to response
@@ -259,6 +265,8 @@ def getTrackList():
 
         print('Returning the following list')
         print(resp_dict)
+        print (json.dumps(resp_dict))
+        print('good')
 
     except Exception as e:
         return Response(json.dumps({'error': repr(e)}), status=401)
@@ -266,9 +274,10 @@ def getTrackList():
     return Response(json.dumps(resp_dict), status=200)
 
 
-@application.route("/albums",methods=['POST'])
+@application.route("/albums",methods=['POST', 'OPTIONS'])
 def getAlbumsList():
     print ('albums!!!!')
+
     try:
         order_field_mapping = {'name': 'album_name', 'artist': 'artist_name', 'number_of_songs': 'track_count'}
         print (request)
@@ -346,9 +355,10 @@ def getAlbumsList():
     return Response(json.dumps(resp_dict), status=200)
 
 
-@application.route("/artists",methods=['POST'])
+@application.route("/artists",methods=['POST', 'OPTIONS'])
 def getArtistsList():
-    print ('albums!!!!')
+    print ('artists!!!!')
+
     try:
         order_field_mapping = {'name': 'artist_name', 'number_of_songs': 'artist_track_count'}
         print (request)
@@ -436,7 +446,7 @@ def getArtistsList():
     return Response(json.dumps(resp_dict), status=200)
 
 
-@application.route("/addToPlaylist",methods=['POST'])
+@application.route("/addToPlaylist",methods=['POST', 'OPTIONS'])
 def addToPlaylist():
     try:
         user_id = validate_user(request)
@@ -461,7 +471,7 @@ def addToPlaylist():
     return Response(status=200)
 
 
-@application.route("/removeFromPlaylist",methods=['POST'])
+@application.route("/removeFromPlaylist",methods=['POST', 'OPTIONS'])
 def removeFromPlaylist():
     try:
         user_id = validate_user(request)
@@ -485,7 +495,7 @@ def removeFromPlaylist():
 
     return Response(status=200)
 
-@application.route("/removePlaylist",methods=['POST'])
+@application.route("/removePlaylist",methods=['POST', 'OPTIONS'])
 def removePlaylist():
     try:
         user_id = validate_user(request)
@@ -510,7 +520,7 @@ def removePlaylist():
     return Response(status=200)
 
 
-@application.route("/playlists",methods=['POST'])
+@application.route("/playlists",methods=['POST', 'OPTIONS'])
 def getPlaylists():
     print ('playlists!!!!')
     try:

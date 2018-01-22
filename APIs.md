@@ -137,10 +137,10 @@
 	```javascript
 	{
 		'list' : [
-					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>' },
-					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>' },
-					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>' },
-					{ 'song': '<song name>', 'artist': '<artist name>', 'album': '<album name>' }
+					{ 'song': '<song name>', 'track_id': <int track id in the DB>, 'artist': '<artist name>', 'album': '<album name>' },
+					{ 'song': '<song name>', 'track_id': <int track id in the DB>, 'artist': '<artist name>', 'album': '<album name>' },
+					{ 'song': '<song name>', 'track_id': <int track id in the DB>, 'artist': '<artist name>', 'album': '<album name>' },
+					{ 'song': '<song name>', 'track_id': <int track id in the DB>, 'artist': '<artist name>', 'album': '<album name>' },
 					...
 				],
 		'total_rows' : <int: The total number of entries passing the filter>
