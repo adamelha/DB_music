@@ -5,17 +5,25 @@
 (function () {
     'use strict';
 
-    angular.module('BlurAdmin.pages.artists')
-        .controller('artistsCtrl', artistsCtrl);
+    angular.module('BlurAdmin.pages.albums')
+        .controller('albumsCtrl', albumsCtrl);
 
     /** @ngInject */
-    function artistsCtrl($scope, $filter, editableOptions, editableThemes) {
+    function albumsCtrl($scope, $filter, editableOptions, editableThemes) {
 
         let tableFields = [
             {
                 name: 'name',
                 alias: 'Name',
+                label: 'Name',
                 placeholder: 'Name',
+            },
+
+            {
+                name: 'artist',
+                alias: 'Artist',
+                label: 'Artist',
+                placeholder: 'Artist'
             },
             {
                 name: 'number_of_songs',
@@ -26,7 +34,7 @@
         ];
 
         $scope.tableConfig = {
-            path: '/artists',
+            path: '/albums',
             //  postProcess: postProcess.bind({$scope: $scope}),
             options: {
                 filter: {}
@@ -37,11 +45,13 @@
         $scope.items = [
             {
                 name: 'item1',
-                number_of_songs: 16
+                number_of_songs: 7,
+                artist: 'artist1',
             },
             {
                 name: 'item2',
-                number_of_songs: 3
+                number_of_songs: 13,
+                artist: 'artist2',
             }
         ]
 

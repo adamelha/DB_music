@@ -145,7 +145,7 @@
 
                     //
                     let reqResult;
-                    if ($scope.mockItems && false) {
+                    if ($scope.mockItems ) {
                         reqResult = returnMock();
                     }
                     else{
@@ -153,8 +153,8 @@
 
                     }
                     reqResult.then((res)=>{
-                        $scope.tableState.items = res.results;
-                        let items = res.results;
+                        $scope.tableState.items = res.list;
+                        let items = res.list;
                         let itemCount = res.total_rows;
                         //
                         // //call post process function if there is one
@@ -180,7 +180,7 @@
                     let d = $q.defer();
                     $timeout(() => {
                         let items = $scope.mockItems || [];
-                        d.resolve({total_rows:items.length, results:items})
+                        d.resolve({total_rows:items.length, list:items})
                     });
                     return d.promise;
                 }

@@ -17,13 +17,15 @@
         'BlurAdmin.pages.maps',
         'BlurAdmin.pages.profile',
         'BlurAdmin.pages.songs',
-        'BlurAdmin.pages.artists'
+        'BlurAdmin.pages.artists',
+        'BlurAdmin.pages.albums',
+        'BlurAdmin.pages.playlists'
     ])
         .config(routeConfig);
 
     /** @ngInject */
     function routeConfig($urlRouterProvider, baSidebarServiceProvider) {
-        $urlRouterProvider.otherwise('/songs');
+        $urlRouterProvider.otherwise('/login');
 
         // baSidebarServiceProvider.addStaticItem({
         //     title: 'Pages',

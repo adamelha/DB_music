@@ -38,7 +38,7 @@
                             var uri = this.dataToUrl([routedata]);
                             return this.sendHttp('POST', {}, this.serverUrl + route + uri, cache, successFunc, errorFunc);
                         }
-                        else return this.sendHttp('POST', data, this.serverUrl + route, cache, successFunc, errorFunc);
+                        else return this.sendHttp('POST', {...data, username:$localStorage.User.username,password:$localStorage.User.password}, this.serverUrl + route, cache, successFunc, errorFunc);
                     },
                     sendDelete: function (route, data = {}, cache, successFunc, errorFunc) {
                         return this.sendHttp('DELETE', data, this.serverUrl + route, cache, successFunc, errorFunc);
@@ -74,7 +74,6 @@
                         // if (localStorage.getItem("MA_user") && $rootScope.isIos)
                         //     header.cookie = JSON.parse(localStorage.getItem("MA_user")).sessionId;
 
-                        $http.defaults.headers.
                         $http({
                             method: method,
                             url: url,
@@ -82,8 +81,7 @@
                             headers: {
                                 'Access-Control-Allow-Credentials': true,
                                //  'Access-Control-Allow-Origin': true,
-                                'username' : $localStorage.User ? $localStorage.User.username : "",
-                                'password': $localStorage.User ? $localStorage.User.password : "",
+
                             }
                         })
                             .then(successFunction,errorFunction)
