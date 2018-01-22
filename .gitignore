@@ -1,2 +1,5 @@
 *.pyc
 .idea/
+/client2/.tmp/
+/client2/bower_components/
+/client2/node_modules/

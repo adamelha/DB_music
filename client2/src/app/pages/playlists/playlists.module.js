@@ -17,7 +17,7 @@
                 controller: 'playlistsCtrl',
                 title: 'Playlists',
                 sidebarMeta: {
-                    icon: 'fa fa-music',
+                    icon: 'fa fa-list',
                     order: 300,
                 },
             })
@@ -25,11 +25,8 @@
             url: '/expandedplaylist/:playlistId',
             templateUrl: 'app/pages/playlists/expandedPlaylist.html',
             controller: 'expandedPlaylistCtrl',
-            title: 'Expanded Playlist View',
-            sidebarMeta: {
-                icon: 'fa fa-list',
-                order: 300,
-            },
+            title: 'Expanded Playlist View'
+
         });
         ;
 
