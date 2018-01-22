@@ -48,8 +48,9 @@ def create_db():
         for i in range(0, len(initial_user_names)):
             sql_cmd = '''
                     INSERT INTO Users (user_name, user_password)
-                    VALUES ('{}','{}')
-                    '''.format(initial_user_names[i], initial_user_passwords[i])
+                    SELECT * FROM (SELECT "{}" AS user_name, "{}" AS user_password) AS tmp
+                    WHERE NOT EXISTS (SELECT user_name FROM Users WHERE user_name = "{}")
+                    '''.format(initial_user_names[i], initial_user_passwords[i], initial_user_names[i])
 
             print (sql_cmd)
             cur.execute(sql_cmd)
@@ -79,7 +80,7 @@ def create_artists_table():
         sql_cmd = '''CREATE TABLE IF NOT EXISTS Artists
                     (
                     artist_id int NOT NULL,
-                    artist_name varchar(100) NOT NULL,
+                    artist_name varchar(200) NOT NULL,
                     PRIMARY KEY (artist_id)
                     )
                     '''
@@ -89,16 +90,16 @@ def create_artists_table():
         MusixMatch = musixmatch.Musixmatch()
         
         # add to the DB the 100 top Artists in the US, UK and IL
-        for country in ['US', 'UK']:
-            jsonobj = MusixMatch.chart_artists(1, 3, country)
+        for country in ['US', 'UK', 'IL', 'AU', 'AT' ,'BG', 'GR', 'IT', 'ES', 'SE']:
+            jsonobj = MusixMatch.chart_artists(1, 50, country)
             for artist in jsonobj["message"]["body"]["artist_list"]:
 
                 #insert this record to the DB if and only if it's not already there
                 sql_cmd = '''
                         INSERT INTO Artists (artist_id, artist_name)
-                        SELECT * FROM (SELECT "{}", "{}") AS tmp
+                        SELECT * FROM (SELECT "{}" AS artist_id, "{}" AS artist_name) AS tmp
                         WHERE NOT EXISTS (SELECT artist_id FROM Artists WHERE artist_id = "{}")
-                        '''.format(artist["artist"]["artist_id"], artist["artist"]["artist_name"],
+                        '''.format(artist["artist"]["artist_id"], artist["artist"]["artist_name"].replace('"', ''),
                                    artist["artist"]["artist_id"])
                 try:
                     cur.execute(sql_cmd)
@@ -121,7 +122,7 @@ def create_albums_table():
         sql_cmd = '''CREATE TABLE IF NOT EXISTS Albums
                     (
                     album_id int NOT NULL,
-                    album_name varchar(100) NOT NULL,
+                    album_name varchar(200) NOT NULL,
                     artist_id int NOT NULL,
                     track_count int NOT NULL,
                     PRIMARY KEY (album_id)
@@ -136,15 +137,15 @@ def create_albums_table():
         cur.execute('SELECT artist_id FROM Artists')
         artistsList = cur.fetchall()
         for artist in artistsList:
-            jsonobj = MusixMatch.artist_albums_get(artist["artist_id"], 1, 1, 3)
+            jsonobj = MusixMatch.artist_albums_get(artist["artist_id"], 1, 1, 50)
             for album in jsonobj["message"]["body"]["album_list"]:
 
                 #insert this record to the DB if and only if it's not already there
                 sql_cmd = '''
                         INSERT INTO Albums (album_id, album_name, artist_id, track_count)
-                        SELECT * FROM (SELECT "{}", "{}", "{}", "{}") AS tmp
+                        SELECT * FROM (SELECT "{}" AS album_id, "{}" AS album_name, "{}" AS artist_id, "{}" AS track_count) AS tmp
                         WHERE NOT EXISTS (SELECT album_id FROM Albums WHERE album_id = "{}")
-                        '''.format(album["album"]["album_id"], str(album["album"]["album_name"]),
+                        '''.format(album["album"]["album_id"], album["album"]["album_name"].replace('"', ''),
                                    album["album"]["artist_id"], album["album"]["album_track_count"],
                                    album["album"]["album_id"])
                 try:
@@ -168,7 +169,7 @@ def create_tracks_table():
         sql_cmd = '''CREATE TABLE IF NOT EXISTS Tracks
                     (
                     track_id int NOT NULL,
-                    track_name varchar(100) NOT NULL,
+                    track_name varchar(200) NOT NULL,
                     track_length int NOT NULL,
                     track_pos_in_album int NOT NULL,
                     album_id int NOT NULL,
@@ -201,12 +202,13 @@ def create_tracks_table():
                 #insert this record to the DB if and only if it's not already there
                 sql_cmd = '''
                         INSERT INTO Tracks (track_id, track_name, track_length, track_pos_in_album, album_id, artist_id, lyrics)
-                        SELECT * FROM (SELECT "{}", "{}", "{}", "{}", "{}", "{}", "{}") AS tmp
+                        SELECT * FROM (SELECT "{}" AS track_id, "{}" AS track_name, "{}" AS track_length,
+                                              "{}" AS track_pos_in_album, "{}" AS album_id, "{}" AS artist_id, "{}" AS lyrics) AS tmp
                         WHERE NOT EXISTS (SELECT track_id FROM Tracks WHERE track_id = "{}")
-                        '''.format(track["track"]["track_id"], str(track["track"]["track_name"]),
+                        '''.format(track["track"]["track_id"], track["track"]["track_name"].replace('"', ''),
                                    track["track"]["track_length"], track_pos_in_album,
                                    album["album_id"], album["artist_id"],
-                                   lyrics, track["track"]["track_id"])
+                                   lyrics.replace('"', ''), track["track"]["track_id"])
                 try:
                     cur.execute(sql_cmd)
                 except Exception as e:
@@ -228,7 +230,7 @@ def create_playlists_table():
         sql_cmd = '''CREATE TABLE IF NOT EXISTS Playlists
                     (
                     user_id int NOT NULL,
-                    playlist_name varchar(100) NOT NULL,
+                    playlist_name varchar(200) NOT NULL,
                     track_id int NOT NULL
                     )
                     '''
