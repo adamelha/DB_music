@@ -17,11 +17,10 @@
           controller: 'artistsCtrl',
           title: 'Artists',
           sidebarMeta: {
-            icon: 'fa fa-music',
+            icon: 'fa fa-microphone',
             order: 300,
           },
         });
 
   }
-
 })();

@@ -17,11 +17,10 @@
           controller: 'albumsCtrl',
           title: 'Albums',
           sidebarMeta: {
-            icon: 'fa fa-music',
+            icon: 'glyphicon glyphicon-cd',
             order: 300,
           },
         });
-
   }
 
 })();

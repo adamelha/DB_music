@@ -33,9 +33,9 @@
         ];
         $scope.playlists = [{name: 'a'}, {name: 'b'}, {name: 'c'}, {name: 'd'}, {name: 'eeeeeeeeeefasdfasdfasdfasdf'}]
         $scope.text = {}
-        $scope.updateSelect = (text) => {
+        $scope.updateSelect = (playlist) => {
             ServerConnection.sendPost('/addToPlaylist', {
-                playlist_name: text.searchText,
+                playlist_name: playlist.name,
                 track_id: $scope.songId
             }).then((r) => {
 
