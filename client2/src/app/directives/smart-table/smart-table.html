@@ -1,13 +1,10 @@
 <div class="row smart-table" ng-init="init()">
     <div class="col-md-12">
         <div ba-panel ba-panel-title="{{panelTitle}}" ba-panel-class="with-scroll">
-            <!--<div ng-if="isButtonsTranscludePresent()" class="add-row-editable-table">-->
-            <!--<ng-transclude class="transcludedButtons" ng-transclude-slot="buttons"></ng-transclude>-->
-            <!--<div class="setOfFunctions">-->
-            <!--<generic-form fields="setOfFunctionsFields"></generic-form>-->
-            <!--<generic-form fields="setOfFiltersFields"></generic-form>-->
-            <!--</div>-->
-            <!--</div>-->
+            <div ng-if="isButtonsTranscludePresent()" class="add-row-editable-table">
+                <ng-transclude class="transcludedButtons" ng-transclude-slot="buttons"></ng-transclude>
+
+            </div>
             <div class="horizontal-scroll">
                 <div class="form-group select-page-size-wrap">
                     <label>Items Per Page

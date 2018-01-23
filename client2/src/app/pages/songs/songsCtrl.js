@@ -100,6 +100,22 @@
             return songs;
         }
 
+        $scope.updateSongs=(lyrics)=>{
+            let options = $scope.tableConfig.reqOtions ? $scope.tableConfig.reqOtions : null;
+            if (options){
+                options.filters.lyrics=lyrics;
+            }
+            else{
+                options={filters:{lyrics:lyrics}}
+            }
+
+            ServerConnection.sendPost('/songs', options).then((r) => {
+                $scope.lyrics='';
+            },err=>{
+                $scope.lyrics='';
+            })
+        }
+
         $scope.tableConfig = {
             path: '/songs',
             postProcess: postProcess.bind({$scope: $scope}),

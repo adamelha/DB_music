@@ -2,7 +2,17 @@
 
   <smart-table right-column="rightColumn" ng-if="tableConfig" panel-title="panelTitle"
                mock-items="items" table-config="tableConfig" >
+    <buttons>
+        <div style="display: flex; width: 30%;">
+            <input ng-model="lyrics"
+                   name="Search Lyrics"
+                   type="text"
+                   class="form-control">
+            <button class="btn btn-default btn-auth" ng-click="updateSongs(lyrics)">Search Lyrics</button>
+        </div>
 
+
+    </buttons>
   </smart-table>
 
 

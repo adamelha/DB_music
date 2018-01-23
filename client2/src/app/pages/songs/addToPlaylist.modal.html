@@ -26,6 +26,10 @@
         </ui-select>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-primary" ng-click="$dismiss()">Save changes</button>
+        <div style="display: flex; ">
+            <input type="text" ng-model="text.newPlaylistName" class="form-control">
+            <button type="button" class="btn btn-primary" ng-click="updateSelect({name:text.newPlaylistName})">Add To New Playlist</button>
+        </div>
+
     </div>
 </div>

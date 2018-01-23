@@ -142,7 +142,7 @@
                     let filters = Object.assign({}, $scope.tableConfig.options.filter, tableCtrl.filter)
                     let populate = $scope.tableConfig.options.populate;
                     let reqOtions = { ...paging, ...sort, filters:{...filters}}
-
+                    $scope.tableConfig.reqOtions=reqOtions;
                     //
                     let reqResult;
                     if ($scope.mockItems && false) { //disable mock mode
