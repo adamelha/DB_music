@@ -1,4 +1,5 @@
 from flask import Flask,render_template,jsonify,json,request
+from db_operations import db_operations as db
 import MySQLdb as mdb
 from app_config.config import CONFIG
 from flask import Response
@@ -16,90 +17,6 @@ The app will run on port 4000 browser to http://localhost:4000/
 
 
 '''
-Exceptions. Move to separate file?
-'''
-class UserNotExistException(Exception):
-    pass
-class UserExistsException(Exception):
-    pass
-
-
-
-'''
-Get an sql command and return all the rows
-'''
-def execute_sql_command_fetch_all(cmd):
-    print("Executing sql command:")
-    print(cmd)
-    with con:
-        cur = con.cursor(mdb.cursors.DictCursor)
-        cur.execute(cmd)
-        return cur.fetchall()
-
-'''
-Get an sql command raise exception if failed
-'''
-def execute_sql_command_no_fetch(cmd):
-    print("Executing sql command:")
-    print(cmd)
-    with con:
-        cur = con.cursor(mdb.cursors.DictCursor)
-        cur.execute(cmd)
-
-
-'''
-Validate user based on credentials in the JSON in the body of the request
-If the username and password do not match (or not exist) raise a UserNotExistException
-Returns the user id
-'''
-def validate_user(request):
-    try:
-        userName = request.json['username']
-        password = request.json['password']
-        if userName is None or password is None:
-            raise Exception()
-
-        sql_cmd = '''
-                    SELECT user_id, user_name, user_password
-                    FROM Users
-                    WHERE user_name='{}' AND user_password='{}'
-                    '''.format(userName, password)
-        rows = execute_sql_command_fetch_all(sql_cmd)
-
-        if len(rows) != 1:
-            raise Exception()
-
-    except Exception as e:
-        print (str(e))
-        raise UserNotExistException("User and password do not match an existing user")
-
-    return rows[0]['user_id']
-
-'''
-Assert that a username in a request does not exist in the Users DB.
-If it does, raise a UserExistsException
-'''
-def validate_user_does_not_exist(request):
-    try:
-        userName = request.json['username']
-        if userName is None:
-            raise Exception()
-
-        sql_cmd = '''
-                    SELECT user_name
-                    FROM Users
-                    WHERE user_name='{}'
-                    '''.format(userName)
-
-        rows = execute_sql_command_fetch_all(sql_cmd)
-
-        if len(rows) > 0:
-            raise Exception()
-    except Exception as e:
-        print (str(e))
-        raise UserExistsException("User already exists")
-
-'''
 Insert a user into the database only if the user does not exist.
 Otherwise return user exists error
 '''
@@ -107,35 +24,17 @@ Otherwise return user exists error
 def signUp():
     print ('signup!!!!')
     try:
-        validate_user_does_not_exist(request)
+        db.validate_user_does_not_exist(con, request)
         userName = request.json['username']
         password = request.json['password']
 
         print ('Will now add the following user to the DB')
         print ('userName = {}, password = {}'.format(userName, password))
 
-        sql_cmd = '''
-                INSERT INTO Users (user_name, user_password)
-                VALUES ('{}','{}')
-                '''.format(userName, password)
-
-        with con:
-            cur = con.cursor(mdb.cursors.DictCursor)
-
-            print ('executing the following sql command:')
-            print (sql_cmd)
-
-            cur.execute(sql_cmd)
-
-            # Print the data for debug purposes
-            cur.execute('SELECT * FROM Users LIMIT 30')
-            rows = cur.fetchall()
-            for row in rows:
-                print ('user_id: {}, user_name: {}, user_password: {}'.format(row['user_id'], row['user_name'],
-                                                                             row['user_password']))
+        db.signUp(con, userName, password)
 
     except Exception as e:
-        if isinstance(e, UserExistsException):
+        if isinstance(e, db.UserExistsException):
             return Response(json.dumps({'error': "User already exists"}), status=409)
         else:
             return Response(json.dumps({'error': str(e)}), status=500)
@@ -150,10 +49,10 @@ Returns 200 if user-password combination exists.
 def login():
     print ('login!!!')
     try:
-        validate_user(request)
+        db.validate_user(con, request)
 
     except Exception as e:
-        if isinstance(e, UserNotExistException):
+        if isinstance(e, db.UserNotExistException):
             return Response(json.dumps({'error': str(e)}), status=401)
         else:
             return Response(json.dumps({'error': str(e)}), status=500)
@@ -166,7 +65,7 @@ def getTrackList():
     try:
         order_field_mapping = {'name' : 'track_name', 'album' : 'album_name', 'artist' : 'artist_name'}
 
-        user_id = validate_user(request)
+        user_id = db.validate_user(con, request)
 
         print (request)
         json_data = request.get_json()
@@ -208,11 +107,9 @@ def getTrackList():
 
         # album name to filter by, if an empty string is recived no filtering by album will be made
         if ('album' in filters):
-            print('yes')
             album_name = 'album_name = "{}" and '.format(filters['album'])
             print (album_name)
         else:
-            print('no')
             album_name = ""
 
         # if set, query will only retrive tracks that has available lyrics
@@ -221,31 +118,7 @@ def getTrackList():
         else:
             only_if_has_lyrics = ""
 
-        print ('Get a tracks list filtered by artist name and/or album name')
-
-        # Check wheather displaying a playlist or not
-        if 'playlist_name' in json_data:
-
-            sql_cmd = '''
-                    SELECT PlaylistTracks.track_id, PlaylistTracks.track_name AS track_name, album_name, artist_name
-                    FROM Artists, Albums, (SELECT Tracks.*
-                                            FROM Playlists, Tracks
-                                            WHERE user_id = {} and playlist_name = "{}" and Playlists.track_id = Tracks.track_id) AS PlaylistTracks
-                    WHERE {}{}{}{}PlaylistTracks.artist_id = Artists.artist_id and PlaylistTracks.album_id = Albums.album_id
-                    ORDER BY {} {}
-                    '''.format(user_id, json_data['playlist_name'], track_name, artist_name, album_name, only_if_has_lyrics, order_field_mapping[json_data['field']], json_data['order'])
-        else:
-            sql_cmd = '''
-                    SELECT track_id, track_name, album_name, artist_name
-                    FROM Tracks, Artists, Albums
-                    WHERE {}{}{}{}Tracks.artist_id = Artists.artist_id and Tracks.album_id = Albums.album_id
-                    ORDER BY {} {}
-                    '''.format(track_name, artist_name, album_name, only_if_has_lyrics, order_field_mapping[json_data['field']], json_data['order'])
-
-
-        tracks = execute_sql_command_fetch_all(sql_cmd)
-        #print (tracks)
-        # Create dictionary for response JSON
+        tracks = db.getTrackList(con, json_data, user_id, track_name, artist_name, album_name, only_if_has_lyrics, order_field_mapping)
 
         resp_dict = { 'list' : [], 'total_rows' : len(tracks)}
         print('offset is '.format(offset))
@@ -264,14 +137,12 @@ def getTrackList():
 
         print('Returning the following list')
         print(resp_dict)
-        print (json.dumps(resp_dict))
-        print('good')
 
     except Exception as e:
         print repr(e)
         return Response(json.dumps({'error': repr(e)}), status=401)
 
-    return Response(json.dumps(resp_dict), status=200)
+    return Response(json.dumps(resp_dict, ensure_ascii=False), status=200)
 
 
 @application.route("/albums",methods=['POST', 'OPTIONS'])
@@ -325,20 +196,7 @@ def getAlbumsList():
         else:
             track_count = ""
 
-
-        print ('Get a tracks list filtered by artist name and/or album name')
-
-        sql_cmd = '''
-                    SELECT album_name, track_count, artist_name
-                    FROM Albums, Artists
-                    WHERE {}{}{}Albums.artist_id = Artists.artist_id
-                    ORDER BY {} {}
-                    '''.format(album_name, artist_name, track_count,
-                               order_field_mapping[json_data['field']], json_data['order'])
-
-        tracks = execute_sql_command_fetch_all(sql_cmd)
-        # print (tracks)
-        # Create dictionary for response JSON
+        tracks = db.getAlbumsList(con, json_data, album_name, artist_name, track_count, order_field_mapping)
 
         resp_dict = {'list': [], 'total_rows': len(tracks)}
         for i in range(offset, offset + entries_per_page):
@@ -354,11 +212,11 @@ def getAlbumsList():
 
         print('Returning the following list')
         print(resp_dict)
-
+        print('yes')
     except Exception as e:
         return Response(json.dumps({'error': repr(e)}), status=401)
-
-    return Response(json.dumps(resp_dict), status=200)
+    print('before return')
+    return Response(json.dumps(resp_dict, ensure_ascii=False), status=200)
 
 
 @application.route("/artists",methods=['POST', 'OPTIONS'])
@@ -416,26 +274,7 @@ def getArtistsList():
             # Remove extra 'and'
             where = where[:-4]
 
-        print ('Get a tracks list filtered by artist name and/or album name')
-
-        sql_cmd = '''
-                    SELECT artist_name, artist_track_count
-                    FROM (
-                        SELECT artist_name, count(artist_id) as artist_track_count
-                        FROM (
-                                SELECT Tracks.artist_id, artist_name, track_id
-                                FROM Tracks, Artists
-                                WHERE Tracks.artist_id = Artists.artist_id
-                            ) AS x
-                        GROUP BY artist_id
-                        ) AS y
-                    {}
-                    ORDER BY {} {}
-                    '''.format(where, order_field_mapping[json_data['field']], json_data['order'])
-
-        tracks = execute_sql_command_fetch_all(sql_cmd)
-        # print (tracks)
-        # Create dictionary for response JSON
+        tracks = db.getArtistsList(con, json_data, where, order_field_mapping)
 
         resp_dict = {'list': [], 'total_rows': len(tracks)}
         for i in range(offset, offset + entries_per_page):
@@ -454,13 +293,13 @@ def getArtistsList():
     except Exception as e:
         return Response(json.dumps({'error': str(e)}), status=401)
 
-    return Response(json.dumps(resp_dict), status=200)
+    return Response(json.dumps(resp_dict, ensure_ascii=False), status=200)
 
 
 @application.route("/addToPlaylist",methods=['POST', 'OPTIONS'])
 def addToPlaylist():
     try:
-        user_id = validate_user(request)
+        user_id = db.validate_user(con, request)
         print (user_id)
         print (request)
         json_data = request.get_json()
@@ -469,12 +308,7 @@ def addToPlaylist():
         if json_data['track_id'] is None or json_data['playlist_name'] is None:
             raise Exception('Missing parameters in body of request')
 
-        sql_cmd = '''
-                    INSERT INTO Playlists
-                    values({}, "{}", {})
-                    '''.format(user_id, json_data['playlist_name'], json_data['track_id'])
-
-        execute_sql_command_no_fetch(sql_cmd)
+        db.addToPlaylist(con, json_data, user_id)
 
     except Exception as e:
         return Response(json.dumps({'error': str(e)}), status=401)
@@ -485,7 +319,7 @@ def addToPlaylist():
 @application.route("/removeFromPlaylist",methods=['POST', 'OPTIONS'])
 def removeFromPlaylist():
     try:
-        user_id = validate_user(request)
+        user_id = db.validate_user(con, request)
 
         print (request)
         json_data = request.get_json()
@@ -494,12 +328,7 @@ def removeFromPlaylist():
         if json_data['track_id'] is None or json_data['playlist_name'] is None:
             raise Exception('Missing parameters in body of request')
 
-        sql_cmd = '''
-                    DELETE FROM Playlists
-                    WHERE user_id={} AND playlist_name="{}" AND track_id={}
-                    '''.format(user_id, json_data['playlist_name'], json_data['track_id'])
-
-        execute_sql_command_no_fetch(sql_cmd)
+        db.removeFromPlaylist(con, json_data, user_id)
 
     except Exception as e:
         return Response(json.dumps({'error': str(e)}), status=401)
@@ -509,7 +338,7 @@ def removeFromPlaylist():
 @application.route("/removePlaylist",methods=['POST', 'OPTIONS'])
 def removePlaylist():
     try:
-        user_id = validate_user(request)
+        user_id = db.validate_user(con, request)
 
         print (request)
         json_data = request.get_json()
@@ -518,12 +347,8 @@ def removePlaylist():
         if json_data['playlist_name'] is None:
             raise Exception('Missing parameters in body of request')
 
-        sql_cmd = '''
-                    DELETE FROM Playlists
-                    WHERE user_id={} AND playlist_name="{}"
-                    '''.format(user_id, json_data['playlist_name'])
+        db.removePlaylist(con, user_id, json_data)
 
-        execute_sql_command_no_fetch(sql_cmd)
 
     except Exception as e:
         return Response(json.dumps({'error': str(e)}), status=401)
@@ -536,7 +361,7 @@ def getPlaylists():
     print ('playlists!!!!')
     try:
         order_field_mapping = {'name': 'playlist_name', 'number_of_songs': 'track_count'}
-        user_id = validate_user(request)
+        user_id = db.validate_user(con, request)
 
         print (request)
         json_data = request.get_json()
@@ -551,15 +376,7 @@ def getPlaylists():
 
         offset = page_index * entries_per_page
 
-        sql_cmd = '''
-                    SELECT playlist_name, COUNT(*) AS track_count
-                    FROM Playlists
-                    WHERE user_id = {}
-                    GROUP BY user_id, playlist_name
-                    ORDER BY {} {}
-                    '''.format(user_id, order_field_mapping[json_data['field']], json_data['order'])
-
-        playlists = execute_sql_command_fetch_all(sql_cmd)
+        playlists = db.getPlaylists(con, user_id, order_field_mapping, json_data)
 
         resp_dict = {'list': [], 'total_rows': len(playlists)}
         for i in range(offset, offset + entries_per_page):
@@ -619,6 +436,7 @@ def serve_static_styles(filename):
 # The main, takes the config from the config file and connects to the mysql server
 # Then runs the server
 if __name__ == "__main__":
+    # Connect to mysql before even running the server
     con = mdb.connect(CONFIG['mysql']['host'], CONFIG['mysql']['user'], CONFIG['mysql']['pass'])
     with con:
         cur = con.cursor(mdb.cursors.DictCursor)
