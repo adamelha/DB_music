@@ -100,6 +100,48 @@
             return songs;
         }
 
+        $scope.rowButton = {
+            onClick: (row) => {
+
+                ServerConnection.sendPost('/singleLyrics', {filters:{track_id:row.track_id}}).then((r) => {
+                    $scope.openRow=r;
+
+                    $uibModal.open({
+                        animation: true,
+                        template: '<h1 style="text-align: center; padding:10px" ng-if="openRow.lyrics">Song Lyrics - {{openRow.name}} </h1><div style="text-align: center;\n' +
+                        '    min-height: 200px;\n' +
+                        '    justify-content: center;\n' +
+                        '    display: flex;\n' +
+                        '    padding: 15px;">{{openRow.lyrics?openRow.lyrics:"No Lyrics Found"}}</div>',
+                        size: 'md',
+                        scope: $scope,
+                        resolve: {
+                            items: function () {
+                                return $scope.items;
+                            }
+                        }
+                    });
+                },err=>{
+                    $uibModal.open({
+                        animation: true,
+                        template: '<h1 style="text-align: center; padding:10px" ng-if="openRow.lyrics">Song Lyrics - {{openRow.name}} </h1><div style="text-align: center;\n' +
+                        '    min-height: 200px;\n' +
+                        '    justify-content: center;\n' +
+                        '    display: flex;\n' +
+                        '    padding: 15px;">{{openRow.lyrics?openRow.lyrics:"No Lyrics Found"}}</div>',
+                        size: 'md',
+                        scope: $scope,
+                        resolve: {
+                            items: function () {
+                                return $scope.items;
+                            }
+                        }
+                    });
+                })
+
+            }
+        }
+
         $scope.updateSongs=(lyrics)=>{
             let options = $scope.tableConfig.reqOtions ? $scope.tableConfig.reqOtions : null;
             if (options){
@@ -111,6 +153,7 @@
 
             ServerConnection.sendPost('/songs', options).then((r) => {
                 $scope.lyrics='';
+                $scope.songs=r.list;
             },err=>{
                 $scope.lyrics='';
             })
@@ -130,6 +173,7 @@
                 name: 'item1',
                 album: 'album1',
                 artist: 'artist1',
+                lyrics:'lyrics lyrics lyrics lyrics lyrics lyrics lyrics lyrics lyrics lyrics lyrics lyrics lyrics lyrics lyrics lyrics lyrics lyrics lyrics '
             },
             {
                 name: 'item2',
