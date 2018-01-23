@@ -6,8 +6,9 @@
         <h4 class="modal-title">Add To Playlist</h4>
     </div>
     <div class="modal-body">
-        <ui-select ng-model="searchText"
-                   class="btn-group bootstrap-select form-control"
+
+        <ui-select ng-model="text.searchText"
+                   class=" show-tick "
                    ng-change="updateSelect(searchText)"
                    append-to-body="false"
                    search-enabled="true"
@@ -17,7 +18,9 @@
                 <span> {{$select.selected.value}}</span>
             </ui-select-match>
             <ui-select-choices ng-hide="!$select.open"
-                               repeat="option.name as option in playlists">
+                               repeat=" option in playlists"
+                               refresh="onChange($select.search)"
+                               refresh-delay="0">
                 <span ng-bind-html="option.name"></span>
             </ui-select-choices>
         </ui-select>

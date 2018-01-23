@@ -22,7 +22,7 @@
                 },
             })
             .state('expandedPlaylist', {
-            url: '/expandedplaylist/:playlistId',
+            url: '/expandedplaylist/:playlistName',
             templateUrl: 'app/pages/playlists/expandedPlaylist.html',
             controller: 'expandedPlaylistCtrl',
             title: 'Expanded Playlist View'

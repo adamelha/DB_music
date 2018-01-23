@@ -9,7 +9,7 @@
         .controller('songsCtrl', songsCtrl);
 
     /** @ngInject */
-    function songsCtrl($scope, $filter, editableOptions, editableThemes, $uibModal) {
+    function songsCtrl($scope, $filter, editableOptions, editableThemes, $uibModal, $timeout, $q, ServerConnection) {
 
         let tableFields = [
             {
@@ -31,20 +31,43 @@
                 placeholder: 'Artist'
             }
         ];
+        $scope.playlists = [{name: 'a'}, {name: 'b'}, {name: 'c'}, {name: 'd'}, {name: 'eeeeeeeeeefasdfasdfasdfasdf'}]
+        $scope.text = {}
+        $scope.updateSelect = (text) => {
+            ServerConnection.sendPost('/addToPlaylist', {
+                playlist_name: text.searchText,
+                track_id: $scope.songId
+            }).then((r) => {
 
-        $scope.updateSelect=(text)=>{
-            $scope.playlists=[{name:'a'},{name:'b'}]
-            // ServerConnection.sendPost('/searchPlaylist',{search:text}).then((r)=>{
-            //     $scope.playlists=r.list;
-            // })
+            })
+
+        }
+
+        $scope.onChange = (text) => {
+            // if (newVal != null && newVal != undefined && newVal != oldVal) {
+            //     returnMock()
+            ServerConnection.sendPost('/searchPlaylist', {search: text}).then((r) => {
+                $scope.playlists = r.list;
+            })
+            // }
+        }
+
+        function returnMock() {
+            let d = $q.defer();
+            $timeout(() => {
+                let items = $scope.mockItems || [];
+                d.resolve({total_rows: items.length, list: items})
+            }, 0);
+            return d.promise;
         }
 
         function showModal(song) {
+            $scope.songId = song.track_id;
             $uibModal.open({
                 animation: true,
                 templateUrl: 'app/pages/songs/addToPlaylist.modal.html',
                 size: 'sm',
-                scope:$scope,
+                scope: $scope,
                 resolve: {
                     items: function () {
                         return $scope.items;

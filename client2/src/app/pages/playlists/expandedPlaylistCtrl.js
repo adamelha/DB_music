@@ -9,7 +9,7 @@
         .controller('expandedPlaylistCtrl', expandedPlaylistCtrl);
 
     /** @ngInject */
-    function expandedPlaylistCtrl($scope,$state, $filter, editableOptions, editableThemes,ServerConnection ) {
+    function expandedPlaylistCtrl($scope,$state, $filter, editableOptions, editableThemes,ServerConnection,$stateParams ) {
 
         let tableFields = [
             {
@@ -36,7 +36,7 @@
             path: '/songs',
             //  postProcess: postProcess.bind({$scope: $scope}),
             options: {
-                filter: {}
+                filter: {playlist_name:$stateParams.playlistName}
             },
             fields: tableFields
         }
@@ -59,7 +59,7 @@
             buttons: [
                 {
                     onClick: (row) => {
-                        ServerConnection.sendPost('/removeSongFromPlaylist', {playlist_name: row.name}) //TODO - add unique identifier for song and playlist
+                        ServerConnection.sendPost('/removeSongFromPlaylist', {playlist_name: $stateParams.playlistName, track_id:row.track_id})
                     },
                     icon: 'fa fa-remove',
                     isShownOnRow: () => {

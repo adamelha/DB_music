@@ -2,35 +2,37 @@
     'use strict';
 
     angular.module('BlurAdmin.auth')
-        .controller('loginPageCtrl', ['$scope', 'editableOptions', 'editableThemes', 'ServerConnection', '$state', 'Alertify','$localStorage',
+        .controller('signupPageCtrl', ['$scope', 'editableOptions', 'editableThemes', 'ServerConnection', '$state', 'Alertify','$localStorage',
 
             function ($scope, editableOptions, editableThemes, ServerConnection, $state, Alertify, $localStorage) {
 
-                $scope.signIn = () => {
-                    const inserted = getUserAndPassInput();
-                    $localStorage.User = inserted;
-                    ServerConnection.sendPost("/login",inserted,null,false,loginSuccessHandler,loginErrHandler);
-                };
+
                 $scope.signUp = () => {
-                    $state.go("signup")
+                    $scope.user = getUserAndPassInput();
+                    $localStorage.User = $scope.user ;
+                    ServerConnection.sendPost("/signUp",$scope.user,null,false,signupSuccessHandler,signupErrHandler);
                 };
 
                 function getUserAndPassInput() {
                     return {
-                        username: angular.element('#inputNamel3').val(),
+                        username: angular.element('#inputName3').val(),
                         password: angular.element('#inputPassword3').val()
                     };
                 }
 
-                function loginSuccessHandler(res) {
+                function signupSuccessHandler(res) {
                     let user=res;
                     Alertify.success(`Logged in as ${user.username}`);
                     $state.go('songs');
 
                 }
 
-                function loginErrHandler(err) {
+                function signupErrHandler(err) {
                     Alertify.error(err ? err.message: 'Error logging in')
+                }
+
+                $scope.goToSignIn=()=>{
+                    $state.go('login');
                 }
             }
 

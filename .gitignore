@@ -3,3 +3,7 @@
 /client2/.tmp/
 /client2/bower_components/
 /client2/node_modules/
+git
+gulp/
+node_modules/
+package-lock.json

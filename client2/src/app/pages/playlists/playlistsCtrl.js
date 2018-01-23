@@ -29,7 +29,7 @@
             buttons: [
                 {
                     onClick: (row) => {
-                        ServerConnection.sendPost('/removePlaylist', {playlist_name: row.name}) //TODO - add unique identifier for playlist
+                        ServerConnection.sendPost('/removePlaylist', {playlist_name: row.name})
                     },
                     icon: 'fa fa-remove',
                     isShownOnRow: () => {
@@ -50,7 +50,7 @@
 
         $scope.rowButton = {
             onClick: (row) => {
-                $state.go('expandedPlaylist', {playlistId: row.id}) //TODO - if we change to name as key, change this
+                $state.go('expandedPlaylist', {playlistName: row.name})
             }
         }
 

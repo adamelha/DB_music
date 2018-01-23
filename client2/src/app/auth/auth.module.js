@@ -12,6 +12,12 @@
                 templateUrl: 'app/auth/login.html',
                 title: 'Login'
             })
+            .state('signup', {
+                url: '/signup',
+                controller: 'signupPageCtrl',
+                templateUrl: 'app/auth/signup.html',
+                title: 'Sign Up'
+            })
 
     }
 

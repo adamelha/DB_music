@@ -132,7 +132,7 @@
 
                     $scope.tableState.isLoading = true;
                     tableCtrl.filter = tableCtrl.filter || {};
-                    updateFilter(tableCtrl, field)
+                    updateFilter(tableCtrl, field);
                     $scope.tableCtrl = tableCtrl;
                     $scope.tableState.pageSize = tableCtrl.pagination.number;
                     //
@@ -145,7 +145,7 @@
 
                     //
                     let reqResult;
-                    if ($scope.mockItems ) {
+                    if ($scope.mockItems && false) { //disable mock mode
                         reqResult = returnMock();
                     }
                     else{
