@@ -104,7 +104,7 @@ def getTrackList(con, json_data, user_id, track_name, artist_name, album_name, o
 
         sql_cmd = '''
                         SELECT PlaylistTracks.track_id, PlaylistTracks.track_name AS track_name, album_name, artist_name
-                        FROM Artists, Albums, Lyrics, (SELECT Tracks.*
+                        FROM Artists, Albums, (SELECT Tracks.*
                                                 FROM Playlists, Tracks
                                                 WHERE user_id = {} and playlist_name = "{}" and Playlists.track_id = Tracks.track_id) AS PlaylistTracks
                         WHERE {}{}{}{}PlaylistTracks.artist_id = Artists.artist_id and PlaylistTracks.album_id = Albums.album_id
@@ -114,7 +114,7 @@ def getTrackList(con, json_data, user_id, track_name, artist_name, album_name, o
     else:
         sql_cmd = '''
                         SELECT track_id, track_name, album_name, artist_name
-                        FROM Tracks, Artists, Albums, Lyrics
+                        FROM Tracks, Artists, Albums
                         WHERE {}{}{}{}Tracks.artist_id = Artists.artist_id and Tracks.album_id = Albums.album_id
                         ORDER BY {} {}
                         '''.format(track_name, artist_name, album_name, only_if_has_lyrics,
@@ -190,3 +190,14 @@ def getPlaylists(con, user_id, order_field_mapping, json_data):
     playlists = execute_sql_command_fetch_all(con, sql_cmd)
 
     return playlists
+
+def searchPlaylists(con, json_data):
+    sql_cmd = '''
+                SELECT DISTINCT playlist_name FROM Playlists
+                WHERE playlist_name LIKE "{}%"
+            '''.format(json_data['search'])
+
+    playlists = execute_sql_command_fetch_all(con, sql_cmd)
+    print 'yes'
+    return playlists
+

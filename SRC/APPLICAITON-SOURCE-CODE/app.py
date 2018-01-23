@@ -397,6 +397,39 @@ def getPlaylists():
 
     return Response(json.dumps(resp_dict), status=200)
 
+@application.route("/searchPlaylist",methods=['POST', 'OPTIONS'])
+def searchPlaylist():
+    try:
+        order_field_mapping = {'name': 'artist_name', 'number_of_songs': 'artist_track_count'}
+        print (request)
+        json_data = request.get_json()
+        print (json_data)
+
+        # Make sure 'search' is a key in the JSON
+        if (not 'search' in json_data):
+            raise Exception("search not in json")
+
+        playlists = db.searchPlaylists(con, json_data)
+
+        resp_dict = {'list': []}
+        for i in range(0, len(playlists)):
+            if i >= len(playlists):
+                break
+
+            dict = { 'playlist_name' : playlists[i]['playlist_name']
+                    }
+            # Append entry to response
+            resp_dict['list'].append(dict)
+
+        print('Returning the following list')
+        print(resp_dict)
+
+    except Exception as e:
+        return Response(json.dumps({'error': str(e)}), status=401)
+
+    return Response(json.dumps(resp_dict, ensure_ascii=False), status=200)
+
+
 
 # This is the main route
 @application.route('/')
