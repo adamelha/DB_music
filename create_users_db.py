@@ -15,6 +15,25 @@ Table: Users:
     1           user2        user2_pass
 '''
 
+def clear_db():
+
+    con = mdb.connect(CONFIG['mysql']['host'], CONFIG['mysql']['user'], CONFIG['mysql']['pass'],
+                    use_unicode = True, charset = 'utf8')
+
+    with con:
+        cur = con.cursor(mdb.cursors.DictCursor)
+        cur.execute('USE {}'.format(CONFIG['mysql']['database']))
+
+        # clear the DB by removing all existing DB tables
+        cur.execute("DROP TABLE IF EXISTS Playlists")
+        cur.execute("DROP TABLE IF EXISTS Tracks")
+        cur.execute("DROP TABLE IF EXISTS Albums")
+        cur.execute("DROP TABLE IF EXISTS Artists")
+        cur.execute("DROP TABLE IF EXISTS Users")
+
+        return
+
+
 def create_db():
     initial_user_names = ['admin', 'user1', 'user2']
     initial_user_passwords = ['admin_pass', 'user1_pass', 'user2_pass']
@@ -22,15 +41,12 @@ def create_db():
     con = mdb.connect(CONFIG['mysql']['host'], CONFIG['mysql']['user'], CONFIG['mysql']['pass'],
                     use_unicode = True, charset = 'utf8')
 
-    # Create the database
-    sql_cmd = 'CREATE DATABASE IF NOT EXISTS {}'.format(CONFIG['mysql']['database'])
     with con:
         cur = con.cursor(mdb.cursors.DictCursor)
-        cur.execute(sql_cmd)
-        cur.execute('USE {}'.format(CONFIG['mysql']['database']))
 
-        # Drop the table if it already exists - start from clean
-        cur.execute("DROP TABLE IF EXISTS Users")
+        # Create the database
+        cur.execute('CREATE DATABASE IF NOT EXISTS {}'.format(CONFIG['mysql']['database']))
+        cur.execute('USE {}'.format(CONFIG['mysql']['database']))
 
         # Create Users table
         sql_cmd = '''CREATE TABLE IF NOT EXISTS Users
@@ -39,10 +55,16 @@ def create_db():
                     user_name varchar(20) NOT NULL,
                     user_password varchar(20) NOT NULL,
                     PRIMARY KEY (user_id),
-                    CHECK (user_id>0)
+                    UNIQUE (user_name)
                     )
                     '''
         cur.execute(sql_cmd)
+
+        # index the user id colomn to implement efficient search of users
+        cur.execute("CREATE UNIQUE INDEX userId ON Users(user_id)")
+
+        # index the user name colomn to implement efficient search of users (used to find playlists)
+        cur.execute("CREATE UNIQUE INDEX userName ON Users(user_name)")
 
         # Populate the Users table
         for i in range(0, len(initial_user_names)):
@@ -73,11 +95,8 @@ def create_artists_table():
         cur = con.cursor(mdb.cursors.DictCursor)
         cur.execute('USE {}'.format(CONFIG['mysql']['database']))
 
-        # Drop the table if it already exists - start from clean
-        cur.execute("DROP TABLE IF EXISTS Artists")
-
         # Create Artists table
-        sql_cmd = '''CREATE TABLE IF NOT EXISTS Artists
+        sql_cmd = '''CREATE TABLE Artists
                     (
                     artist_id int NOT NULL,
                     artist_name varchar(200) NOT NULL,
@@ -86,12 +105,18 @@ def create_artists_table():
                     '''
         cur.execute(sql_cmd)
 
+        # index the artist id colomn to implement efficient search of artists
+        cur.execute("CREATE UNIQUE INDEX artistId ON Artists(artist_id)")
+
+        # index the artist name colomn to implement efficient search of artists
+        cur.execute("CREATE INDEX artistName ON Artists(artist_name)")
+
         # creating an object that can access the musixmatch API
         MusixMatch = musixmatch.Musixmatch()
         
         # add to the DB the 100 top Artists in the US, UK and IL
         for country in ['US', 'UK', 'IL', 'AU', 'AT' ,'BG', 'GR', 'IT', 'ES', 'SE']:
-            jsonobj = MusixMatch.chart_artists(1, 50, country)
+            jsonobj = MusixMatch.chart_artists(1, 3, country)
             for artist in jsonobj["message"]["body"]["artist_list"]:
 
                 #insert this record to the DB if and only if it's not already there
@@ -115,20 +140,24 @@ def create_albums_table():
         cur = con.cursor(mdb.cursors.DictCursor)
         cur.execute('USE {}'.format(CONFIG['mysql']['database']))
 
-        # Drop the table if it already exists - start from clean
-        cur.execute("DROP TABLE IF EXISTS Albums")
-
         # Create Albums table
-        sql_cmd = '''CREATE TABLE IF NOT EXISTS Albums
+        sql_cmd = '''CREATE TABLE Albums
                     (
                     album_id int NOT NULL,
                     album_name varchar(200) NOT NULL,
                     artist_id int NOT NULL,
                     track_count int NOT NULL,
-                    PRIMARY KEY (album_id)
+                    PRIMARY KEY (album_id),
+                    FOREIGN KEY (artist_id) REFERENCES Artists(artist_id)
                     )
                     '''
         cur.execute(sql_cmd)
+
+        # index the album id colomn to implement efficient search of albums
+        cur.execute("CREATE UNIQUE INDEX albumId ON Albums(album_id)")
+
+        # index the album name colomn to implement efficient search of artists
+        cur.execute("CREATE INDEX albumName ON Albums(album_name)")
 
         # creating an object that can access the musixmatch API
         MusixMatch = musixmatch.Musixmatch()
@@ -137,7 +166,7 @@ def create_albums_table():
         cur.execute('SELECT artist_id FROM Artists')
         artistsList = cur.fetchall()
         for artist in artistsList:
-            jsonobj = MusixMatch.artist_albums_get(artist["artist_id"], 1, 1, 50)
+            jsonobj = MusixMatch.artist_albums_get(artist["artist_id"], 1, 1, 3)
             for album in jsonobj["message"]["body"]["album_list"]:
 
                 #insert this record to the DB if and only if it's not already there
@@ -146,8 +175,7 @@ def create_albums_table():
                         SELECT * FROM (SELECT "{}" AS album_id, "{}" AS album_name, "{}" AS artist_id, "{}" AS track_count) AS tmp
                         WHERE NOT EXISTS (SELECT album_id FROM Albums WHERE album_id = "{}")
                         '''.format(album["album"]["album_id"], album["album"]["album_name"].replace('"', ''),
-                                   album["album"]["artist_id"], album["album"]["album_track_count"],
-                                   album["album"]["album_id"])
+                                   artist["artist_id"], album["album"]["album_track_count"], album["album"]["album_id"])
                 try:
                     cur.execute(sql_cmd)
                 except Exception as e:
@@ -162,11 +190,8 @@ def create_tracks_table():
         cur = con.cursor(mdb.cursors.DictCursor)
         cur.execute('USE {}'.format(CONFIG['mysql']['database']))
 
-        # Drop the table if it already exists - start from clean
-        cur.execute("DROP TABLE IF EXISTS Tracks")
-
-        # Create Albums table
-        sql_cmd = '''CREATE TABLE IF NOT EXISTS Tracks
+        # Create Tracks table
+        sql_cmd = '''CREATE TABLE Tracks
                     (
                     track_id int NOT NULL,
                     track_name varchar(200) NOT NULL,
@@ -174,11 +199,18 @@ def create_tracks_table():
                     track_pos_in_album int NOT NULL,
                     album_id int NOT NULL,
                     artist_id int NOT NULL,
-                    lyrics TEXT NOT NULL,
-                    PRIMARY KEY (track_id)
+                    PRIMARY KEY (track_id),
+                    FOREIGN KEY (artist_id) REFERENCES Artists(artist_id),
+                    FOREIGN KEY (album_id) REFERENCES Albums(album_id)
                     )
                     '''
         cur.execute(sql_cmd)
+
+        # index the track id colomn to implement efficient search of tracks
+        cur.execute("CREATE UNIQUE INDEX trackId ON Tracks(track_id)")
+
+        # index the track name colomn to implement efficient search of tracks
+        cur.execute("CREATE INDEX trackName ON Tracks(track_name)")
 
         # creating an object that can access the musixmatch API
         MusixMatch = musixmatch.Musixmatch()
@@ -196,23 +228,76 @@ def create_tracks_table():
                 # calculate the track position in the album
                 track_pos_in_album += 1
 
-                #call lyrics.voh to get the tracks lirics
-                lyrics = get_lyrics(album['artist_name'] ,track["track"]["track_name"])
-
                 #insert this record to the DB if and only if it's not already there
                 sql_cmd = '''
-                        INSERT INTO Tracks (track_id, track_name, track_length, track_pos_in_album, album_id, artist_id, lyrics)
+                        INSERT INTO Tracks (track_id, track_name, track_length, track_pos_in_album, album_id, artist_id)
                         SELECT * FROM (SELECT "{}" AS track_id, "{}" AS track_name, "{}" AS track_length,
-                                              "{}" AS track_pos_in_album, "{}" AS album_id, "{}" AS artist_id, "{}" AS lyrics) AS tmp
+                                              "{}" AS track_pos_in_album, "{}" AS album_id, "{}" AS artist_id) AS tmp
                         WHERE NOT EXISTS (SELECT track_id FROM Tracks WHERE track_id = "{}")
                         '''.format(track["track"]["track_id"], track["track"]["track_name"].replace('"', ''),
-                                   track["track"]["track_length"], track_pos_in_album,
-                                   album["album_id"], album["artist_id"],
-                                   lyrics.replace('"', ''), track["track"]["track_id"])
+                                   track["track"]["track_length"], track_pos_in_album, album["album_id"],
+                                   album["artist_id"], track["track"]["track_id"])
                 try:
                     cur.execute(sql_cmd)
                 except Exception as e:
                     print ("Track insersion failed: {}".format(str(e)))
+        return
+
+def create_lyrics_table():
+
+    con = mdb.connect(CONFIG['mysql']['host'], CONFIG['mysql']['user'], CONFIG['mysql']['pass'],
+                    use_unicode = True, charset = 'utf8')
+    with con:
+        cur = con.cursor(mdb.cursors.DictCursor)
+        cur.execute('USE {}'.format(CONFIG['mysql']['database']))
+
+        # Drop the table if it already exists - start from clean
+        cur.execute("DROP TABLE IF EXISTS Lyrics")
+
+        # Create Lyrics table
+        sql_cmd = '''CREATE TABLE Lyrics
+                    (
+                    track_id int NOT NULL,
+                    lyrics TEXT NOT NULL,
+                    PRIMARY KEY (track_id)
+                    )ENGINE = MYISAM
+                    '''
+        cur.execute(sql_cmd)
+
+        # add to the DB lyrics for all the tracks (if such exist in the api lyrics.voh
+        cur.execute('''SELECT track_id, track_name, artist_name
+                       FROM Artists, Tracks
+                       WHERE Artists.artist_id = Tracks.artist_id''')
+        tracksList = cur.fetchall()
+
+        for track in tracksList:
+
+                #call lyrics.voh to get the track lirics
+                lyrics = get_lyrics(track['artist_name'] ,track["track_name"])
+
+                #insert this record to the DB if and only if it's not already there
+                sql_cmd = '''
+                        INSERT INTO Lyrics (track_id, lyrics)
+                        VALUES ("{}", "{}")'''.format(track['track_id'], lyrics.replace('"', ''))
+                try:
+                    cur.execute(sql_cmd)
+                except Exception as e:
+                    print ("Lyrics insersion failed: {}".format(str(e)))
+
+        # create FULLTEXT catalog
+        #sql_cmd = '''CREATE FULLTEXT CATALOG lyricsFTS'''
+        #cur.execute(sql_cmd)
+
+        # create a index key for the Tracks table
+        #sql_cmd = '''CREATE UNIQUE INDEX key_index ON Tracks(track_id)'''
+        #cur.execute(sql_cmd)
+
+        # create FULLTEXT index of the colomn lyrics of the table Tracks
+        #sql_cmd = '''CREATE FULLTEXT INDEX ON Lyrics(lyrics Language 1033)
+        #             KEY INDEX key_index ON lyricsFTS
+        #             WITH CHANGE_TRACKING AUTO'''
+        #cur.execute(sql_cmd)
+
         return
 
 def create_playlists_table():
@@ -223,24 +308,28 @@ def create_playlists_table():
         cur = con.cursor(mdb.cursors.DictCursor)
         cur.execute('USE {}'.format(CONFIG['mysql']['database']))
 
-        # Drop the table if it already exists - start from clean
-        cur.execute("DROP TABLE IF EXISTS Playlists")
-
         # Create Albums table
-        sql_cmd = '''CREATE TABLE IF NOT EXISTS Playlists
+        sql_cmd = '''CREATE TABLE Playlists
                     (
                     user_id int NOT NULL,
                     playlist_name varchar(200) NOT NULL,
-                    track_id int NOT NULL
+                    track_id int NOT NULL,
+                    FOREIGN KEY (user_id) REFERENCES Users(user_id)
                     )
                     '''
         cur.execute(sql_cmd)
 
+        # index the (user_id, playlist_name) colomns to implement efficient search of playlists
+        cur.execute("CREATE INDEX Playlist ON Playlists(user_id, playlist_name)")
+
         return
 
 if __name__ == '__main__':
+    
+    clear_db()
     create_db()
     create_artists_table()
     create_albums_table()
     create_tracks_table()
+    create_lyrics_table()
     create_playlists_table()
