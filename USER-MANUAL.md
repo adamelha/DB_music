@@ -26,33 +26,60 @@ Currently in the database there are 3 registered users that may be used if you d
 You may create your own user by supplying a desired username and password.
 
 ## The Screens Of the Application
-- The login/sign up screen. user will get here when first entering the site.
+- The login screen. user will get here when first entering the site and has the option to log into an existing account by filling his credentials.
 
 ![picture](login.PNG)
 
+- The Sign Up screen. From the login screen the user may want to create a new account. To do so simply press the Sign Up button and then fill in new credentials.
+
+![picture](sign_up.PNG)
+
 - The songs screen:
-	- When logging in (the above image), On left part of the screen there are 3 music notes, the top one will bring you to the songs screen:
+	- When logging in (the above image), On left part of the screen there is a music note. Pressing on it  bring you to the songs screen:
 	- On the top of the table on the left you may choose how many items you wish to display per page.
 	- By pressing any one of the filter symbols, one may choose which filter to filter on (you may choose more than one)
-	- On the right of each song there is a button. If user presses the button, a new window will offer to add the song to a user playlist. If the user enters a playlist that does not exist, a news playlist will be created, with that song.  
+	- In addition to the filtering, user may add a search in all the songs' lyrics, by using the Search Lyrics button.
 	
 	![picture](songs.PNG)
+	
+	- If user wishes to display lyrics of a song, simply press on it in the songs screen:
+	
+	![picture](lyrics.PNG)
+	
+	- On the right of each song there is a button. If user presses the button, a new window will offer to add the song to a user playlist. This will open a pop up:
+	- User may add to a new playlist by providing a name on the left of the Add To New Playlist button.
+		
+	![picture](add_to_playlist.PNG)
+		
+	- User may add to an existing playlist of his by using the auto-complete functionality in the Select Option box, Then pressing the playlist you wish to add the song to:
+		
+	![picture](autocomplete.PNG)
+
 
 - The artists page:
-	- Pressing the second music note will get you to the albums page.
+	- Pressing the microphone icon under the music note will get you to the albums page.
 	- Functionality of this page is identical to the songs page (different fields).
 	
 	![picture](artists.PNG)
 
 - The albums page:
-	- Pressing the second music note will get you to the albums page.
+	- Pressing the CD icon under the microphone icon will get you to the albums page.
 	- Functionality of this page is identical to the previous two pages (different fields).
 	
 	![picture](albums.PNG)
 
 - The playlists page:
+	- Pressing the "hamburger" icon under the CD icon will get you to your personal playlists database page.
 	- This page will display all the playlists that belong to the particular user.
-	- From here the user may choose which playlist to view by pressing the button. 
+	- The user may filter his playlists in a similar manner to all the previous filtering functionality.
+	- The user may remove a playlist from his list by pressing the little 'X' symbol on the left.
+	
+	![picture](playlists.PNG)
+	
+	- From here the user may choose which playlist to view by pressing on it.
+	- From the EXPANDED PLAYLIST VIEW page the user may delete a song from that particular playlist by pressing on the 'X' symbol on the left. 
+	
+	![picture](playlist_view.PNG)
 
 ## DB updates
 Database updates may occur on several occasions:
@@ -62,8 +89,10 @@ Database updates may occur on several occasions:
 - When user removes a playlist, from the playlists page, all the entries with the user's id and the playlist name will be deleted from the Playlists table and the playlist will no longer be available on the playlists page.
 
 
-## Creating the database (one time only, already done)
-- In the root of this project, run `python CREATE-DB-SCRIPT.py`.
+## Creating the database (one time only, already done, no need to rerun will take a couple hours)
+- First you must execute the CREATE-DB-SCRIPT.sql script this will remove all the previous tables and rebuild them.
+- Then, cd into the directory with the python script that populates the DB: `cd SRC/API-DATA-RETRIVAL`
+- Populate the database: `python populate_db.py`
 - This will take a couple hours since a very large database is built from 2 different external sites.
 
 ## Running the app
