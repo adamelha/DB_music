@@ -89,7 +89,7 @@ Database updates may occur on several occasions:
 - When user removes a playlist, from the playlists page, all the entries with the user's id and the playlist name will be deleted from the Playlists table and the playlist will no longer be available on the playlists page.
 
 
-## Creating the database (one time only, already done, no need to rerun will take a couple hours)
+## Creating the database (one time only may take a couple hours)
 - First you must execute the CREATE-DB-SCRIPT.sql script this will remove all the previous tables and rebuild them.
 - Then, cd into the directory with the python script that populates the DB: `cd SRC/API-DATA-RETRIVAL`
 - Populate the database: `python populate_db.py`
@@ -101,5 +101,10 @@ Database updates may occur on several occasions:
 - From the configuration you may also configure the webserver ip. DO NOT CHANGE the port from 4000 since the client uses it.
 - If this is the first time running the app, create the users database: `python create_users_db.py`
 - Run the server: `python app.py`
-- Open your browser to http://localhost:4000/
+- Open your browser to http://<config url>:4000/
 - Now you may browse the app.
+
+## Bonus
+We believe that we may be entitled to some bonus points because of the fillowing:
+- The user interface is very aesthetic and uses angularJS.
+- Cool features such as an auto-complete when the user wishes to add a song to a certain playlist. 

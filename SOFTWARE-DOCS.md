@@ -1,6 +1,6 @@
 # Software Documentation
 
-## Creating the database (one time only, already done, no need to rerun will take a couple hours)
+## Creating the database (one time, may take a couple hours)
 - First you must execute the CREATE-DB-SCRIPT.sql script this will remove all the previous tables and rebuild them.
 - Then, cd into the directory with the python script that populates the DB: `cd SRC/API-DATA-RETRIVAL`
 - Populate the database: `python populate_db.py`
