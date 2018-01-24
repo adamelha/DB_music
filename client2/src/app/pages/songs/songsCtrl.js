@@ -55,7 +55,7 @@
         function returnMock() {
             let d = $q.defer();
             $timeout(() => {
-                let items = $scope.mockItems || [];
+                let items = $scope.items2;
                 d.resolve({total_rows: items.length, list: items})
             }, 0);
             return d.promise;
@@ -154,9 +154,15 @@
             ServerConnection.sendPost('/songs', options).then((r) => {
                 $scope.lyrics='';
                 $scope.songs=r.list;
+                $scope.$broadcast('itemsUpdated',r.list);
+                // $scope.songs=r.list;
             },err=>{
                 $scope.lyrics='';
+
             })
+
+
+
         }
 
         $scope.tableConfig = {
@@ -177,6 +183,20 @@
             },
             {
                 name: 'item2',
+                album: 'album2',
+                artist: 'artist2',
+            }
+        ]
+
+        $scope.items2 = [
+            {
+                name: 'aaaaa',
+                album: 'album1',
+                artist: 'artist1',
+                lyrics:'aaaaaaaaa aaaaaaaaa aaaaaaaaa aaaaaaaaa aaaaaaaaa aaaaaaaaa aaaaaaaaa aaaaaaaaa aaaaaaaaa aaaaaaaaa aaaaaaaaa aaaaaaaaa aaaaaaaaa aaaaaaaaa aaaaaaaaa aaaaaaaaa '
+            },
+            {
+                name: 'bbbbb',
                 album: 'album2',
                 artist: 'artist2',
             }

@@ -141,18 +141,18 @@
                     let sort = getSort(tableCtrl.sort)
                     let filters = Object.assign({}, $scope.tableConfig.options.filter, tableCtrl.filter)
                     let populate = $scope.tableConfig.options.populate;
-                    let reqOtions = { ...paging, ...sort, filters:{...filters}}
-                    $scope.tableConfig.reqOtions=reqOtions;
+                    let reqOtions = {...paging, ...sort, filters: {...filters}}
+                    $scope.tableConfig.reqOtions = reqOtions;
                     //
                     let reqResult;
                     if ($scope.mockItems && false) { //disable mock mode
                         reqResult = returnMock();
                     }
-                    else{
-                        reqResult = ( ServerConnection.sendPost($scope.tableConfig.path, reqOtions))
+                    else {
+                        reqResult = (ServerConnection.sendPost($scope.tableConfig.path, reqOtions))
 
                     }
-                    reqResult.then((res)=>{
+                    reqResult.then((res) => {
                         $scope.tableState.items = res.list;
                         let items = res.list;
                         let itemCount = res.total_rows;
@@ -175,12 +175,15 @@
 
                     return reqResult.promise;
                 }
+                $scope.$on('itemsUpdated', (e,res) => {
+                    $scope.tableState.items=res;
+                });
 
                 function returnMock() {
                     let d = $q.defer();
                     $timeout(() => {
                         let items = $scope.mockItems || [];
-                        d.resolve({total_rows:items.length, list:items})
+                        d.resolve({total_rows: items.length, list: items})
                     });
                     return d.promise;
                 }
@@ -222,7 +225,7 @@
 
                 }
 
-                $scope.updateFilter=updateFilter;
+                $scope.updateFilter = updateFilter;
 
                 function getSort(filter) {
                     return filter.predicate ? {field: filter.predicate, order: filter.reverse ? 'desc' : 'asc'} : {}
