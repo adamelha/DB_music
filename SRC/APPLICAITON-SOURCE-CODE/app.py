@@ -254,14 +254,14 @@ def getArtistsList():
 
         # artist_name to filter by, if an empty string is received no filtering by artist will be made
         if ('name' in filters):
-            artist_name = 'artist_name = "{}" and '.format(filters['name'])
+            artist_name = 'WHERE artist_name = "{}"'.format(filters['name'])
         else:
             artist_name = ""
 
         # track count name to filter in all the albums with more than the given number of songs.
         # If not in filter no filtering by album will be made
         if ('number_of_songs' in filters):
-            artist_track_count = 'artist_track_count > {} and '.format(filters['number_of_songs'])
+            artist_track_count = 'HAVING COUNT(artist_id) > {}'.format(filters['number_of_songs'])
         else:
             artist_track_count = ""
 
@@ -277,7 +277,7 @@ def getArtistsList():
             # Remove extra 'and'
             where = where[:-4]
 
-        tracks = db.getArtistsList(json_data, where, order_field_mapping)
+        tracks = db.getArtistsList(json_data, artist_name, artist_track_count, order_field_mapping)
 
         resp_dict = {'list': [], 'total_rows': len(tracks)}
         for i in range(offset, offset + entries_per_page):

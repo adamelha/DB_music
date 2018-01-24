@@ -145,21 +145,17 @@ def getAlbumsList(json_data, album_name, artist_name, track_count, order_field_m
     tracks = execute_sql_command_fetch_all(sql_cmd)
     return tracks
 
-def getArtistsList(json_data, where, order_field_mapping):
+def getArtistsList(json_data, artist_name, artist_track_count, order_field_mapping):
     sql_cmd = '''
-                        SELECT artist_name, artist_track_count
-                        FROM (
-                            SELECT artist_name, count(artist_id) as artist_track_count
-                            FROM (
-                                    SELECT Tracks.artist_id, artist_name, track_id
-                                    FROM Tracks, Artists
-                                    WHERE Tracks.artist_id = Artists.artist_id
-                                ) AS x
-                            GROUP BY artist_id
-                            ) AS y
-                        {}
-                        ORDER BY {} {}
-                        '''.format(where, order_field_mapping[json_data['field']], json_data['order'])
+                SELECT artist_name, count(artist_id) as artist_track_count
+                FROM (SELECT Tracks.artist_id, artist_name, track_id
+                      FROM Tracks, Artists
+                      WHERE Tracks.artist_id = Artists.artist_id) AS x
+                {}
+                GROUP BY artist_id
+                {}
+                ORDER BY {} {}
+                '''.format(artist_name, artist_track_count, order_field_mapping[json_data['field']], json_data['order'])
 
     tracks = execute_sql_command_fetch_all(sql_cmd)
     return tracks
