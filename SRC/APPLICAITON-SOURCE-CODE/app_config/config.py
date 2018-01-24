@@ -1,15 +1,15 @@
 CONFIG = {
     "mysql": {
-        "user": "root",
-        "pass": "123",
+        "user": "DbMysql23",
+        "pass": "DbMysql23",
         "database": "DbMysql23",
-        "host": "localhost",
+        "host": "mysqlsrv.cs.tau.ac.il",
         "tables": {
             "users": "Users"
         }
     },
     "webserver": {
-        "ip": "0.0.0.0",
+        "ip": "delta-tomcat-vm",
         "port": 4000
     }
 }
