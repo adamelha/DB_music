@@ -3,20 +3,6 @@ from app_config.config import CONFIG
 import musixmatch
 from vohLyrics.voh import get_lyrics
 
-def clear_db():
-    with con:
-        cur = con.cursor(mdb.cursors.DictCursor)
-
-        # clear the DB by removing all existing DB tables
-        cur.execute("DROP TABLE IF EXISTS Playlists")
-        cur.execute("DROP TABLE IF EXISTS Tracks")
-        cur.execute("DROP TABLE IF EXISTS Albums")
-        cur.execute("DROP TABLE IF EXISTS Artists")
-        cur.execute("DROP TABLE IF EXISTS Users")
-
-        return
-
-
 def populate_users_table():
     initial_user_names = ['admin', 'user1', 'user2']
     initial_user_passwords = ['admin_pass', 'user1_pass', 'user2_pass']
@@ -53,10 +39,10 @@ def populate_artists_table():
         MusixMatch = musixmatch.Musixmatch()
         
         # add to the DB the 100 top Artists in the US, UK and IL
-        for country in ['US']:
-            jsonobj = MusixMatch.chart_artists(1, 3, country)
+        for country in ['US', 'UK', 'IL', 'AU', 'AT' ,'BG', 'GR', 'IT', 'ES', 'SE']:
+            jsonobj = MusixMatch.chart_artists(1, 50, country)
             for artist in jsonobj["message"]["body"]["artist_list"]:
-                print("Inserting artist")
+
                 #insert this record to the DB if and only if it's not already there
                 sql_cmd = u'''
                         INSERT INTO Artists (artist_id, artist_name)
@@ -82,9 +68,9 @@ def populate_albums_table():
         cur.execute('SELECT artist_id FROM Artists')
         artistsList = cur.fetchall()
         for artist in artistsList:
-            jsonobj = MusixMatch.artist_albums_get(artist["artist_id"], 1, 1, 3)
+            jsonobj = MusixMatch.artist_albums_get(artist["artist_id"], 1, 1, 40)
             for album in jsonobj["message"]["body"]["album_list"]:
-                print("Inserting album")
+
                 #insert this record to the DB if and only if it's not already there
                 sql_cmd = u'''
                         INSERT INTO Albums (album_id, album_name, artist_id, track_count)
@@ -119,7 +105,7 @@ def populate_tracks_table():
                 # calculate the track position in the album
                 track_pos_in_album += 1
 
-                print("Inserting track")
+
                 #insert this record to the DB if and only if it's not already there
                 sql_cmd = u'''
                         INSERT INTO Tracks (track_id, track_name, track_length, track_pos_in_album, album_id, artist_id)
