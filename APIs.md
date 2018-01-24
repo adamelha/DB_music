@@ -10,7 +10,7 @@
 - [Add Song to New or Existing Playlist](#add-song-to-new-or-existing-playlist)
 - [Get User Playlists](#get-user-playlists)
 - [Remove Playlist](#remove-playlist)
-
+- [Get Lyrics of Specific Song] (#get-lyrics-of-specific-song)
 ## Sign Up
 ----
   Adds a user into the Users database.

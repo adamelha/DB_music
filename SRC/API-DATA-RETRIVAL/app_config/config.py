@@ -7,9 +7,5 @@ CONFIG = {
         "tables": {
             "users": "Users"
         }
-    },
-    "webserver": {
-        "ip": "delta-tomcat-vm",
-        "port": 4000
     }
 }

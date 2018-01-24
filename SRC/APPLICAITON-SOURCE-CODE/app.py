@@ -24,14 +24,14 @@ Otherwise return user exists error
 def signUp():
     print ('signup!!!!')
     try:
-        db.validate_user_does_not_exist(con, request)
+        db.validate_user_does_not_exist(request)
         userName = request.json['username']
         password = request.json['password']
 
         print ('Will now add the following user to the DB')
         print ('userName = {}, password = {}'.format(userName, password))
 
-        db.signUp(con, userName, password)
+        db.signUp(userName, password)
 
     except Exception as e:
         if isinstance(e, db.UserExistsException):
@@ -50,7 +50,7 @@ Returns 200 if user-password combination exists.
 def login():
     print ('login!!!')
     try:
-        db.validate_user(con, request)
+        db.validate_user(request)
 
     except Exception as e:
         if isinstance(e, db.UserNotExistException):
@@ -67,7 +67,7 @@ def getTrackList():
     try:
         order_field_mapping = {'name' : 'track_name', 'album' : 'album_name', 'artist' : 'artist_name'}
 
-        user_id = db.validate_user(con, request)
+        user_id = db.validate_user(request)
 
         print (request)
         json_data = request.get_json()
@@ -120,7 +120,7 @@ def getTrackList():
         else:
             only_if_has_lyrics = ""
 
-        tracks = db.getTrackList(con, json_data, user_id, track_name, artist_name, album_name, only_if_has_lyrics, order_field_mapping)
+        tracks = db.getTrackList(json_data, user_id, track_name, artist_name, album_name, only_if_has_lyrics, order_field_mapping)
 
         resp_dict = { 'list' : [], 'total_rows' : len(tracks)}
 
@@ -198,7 +198,7 @@ def getAlbumsList():
         else:
             track_count = ""
 
-        tracks = db.getAlbumsList(con, json_data, album_name, artist_name, track_count, order_field_mapping)
+        tracks = db.getAlbumsList(json_data, album_name, artist_name, track_count, order_field_mapping)
 
         resp_dict = {'list': [], 'total_rows': len(tracks)}
         for i in range(offset, offset + entries_per_page):
@@ -277,7 +277,7 @@ def getArtistsList():
             # Remove extra 'and'
             where = where[:-4]
 
-        tracks = db.getArtistsList(con, json_data, where, order_field_mapping)
+        tracks = db.getArtistsList(json_data, where, order_field_mapping)
 
         resp_dict = {'list': [], 'total_rows': len(tracks)}
         for i in range(offset, offset + entries_per_page):
@@ -303,7 +303,7 @@ def getArtistsList():
 @application.route("/addToPlaylist",methods=['POST', 'OPTIONS'])
 def addToPlaylist():
     try:
-        user_id = db.validate_user(con, request)
+        user_id = db.validate_user(request)
         print (user_id)
         print (request)
         json_data = request.get_json()
@@ -312,7 +312,7 @@ def addToPlaylist():
         if json_data['track_id'] is None or json_data['playlist_name'] is None:
             raise Exception('Missing parameters in body of request')
 
-        db.addToPlaylist(con, json_data, user_id)
+        db.addToPlaylist(json_data, user_id)
 
     except Exception as e:
         print (str(e))
@@ -324,7 +324,7 @@ def addToPlaylist():
 @application.route("/removeFromPlaylist",methods=['POST', 'OPTIONS'])
 def removeFromPlaylist():
     try:
-        user_id = db.validate_user(con, request)
+        user_id = db.validate_user(request)
 
         print (request)
         json_data = request.get_json()
@@ -333,7 +333,7 @@ def removeFromPlaylist():
         if json_data['track_id'] is None or json_data['playlist_name'] is None:
             raise Exception('Missing parameters in body of request')
 
-        db.removeFromPlaylist(con, json_data, user_id)
+        db.removeFromPlaylist(json_data, user_id)
 
     except Exception as e:
         print (str(e))
@@ -344,7 +344,7 @@ def removeFromPlaylist():
 @application.route("/removePlaylist",methods=['POST', 'OPTIONS'])
 def removePlaylist():
     try:
-        user_id = db.validate_user(con, request)
+        user_id = db.validate_user(request)
 
         print (request)
         json_data = request.get_json()
@@ -353,7 +353,7 @@ def removePlaylist():
         if json_data['playlist_name'] is None:
             raise Exception('Missing parameters in body of request')
 
-        db.removePlaylist(con, user_id, json_data)
+        db.removePlaylist(user_id, json_data)
 
 
     except Exception as e:
@@ -368,7 +368,7 @@ def getPlaylists():
     print ('playlists!!!!')
     try:
         order_field_mapping = {'name': 'playlist_name', 'number_of_songs': 'track_count'}
-        user_id = db.validate_user(con, request)
+        user_id = db.validate_user(request)
 
         print (request)
         json_data = request.get_json()
@@ -393,7 +393,7 @@ def getPlaylists():
         offset = page_index * entries_per_page
 
         print('before')
-        playlists = db.getPlaylists(con, user_id, order_field_mapping, json_data)
+        playlists = db.getPlaylists(user_id, order_field_mapping, json_data)
         print('after')
         resp_dict = {'list': [], 'total_rows': len(playlists)}
         for i in range(offset, offset + entries_per_page):
@@ -418,7 +418,7 @@ def getPlaylists():
 @application.route("/searchPlaylist",methods=['POST', 'OPTIONS'])
 def searchPlaylist():
     try:
-        user_id = db.validate_user(con, request)
+        user_id = db.validate_user(request)
         print (request)
         json_data = request.get_json()
         print (json_data)
@@ -427,7 +427,7 @@ def searchPlaylist():
         if (not 'search' in json_data):
             raise Exception("search not in json")
 
-        playlists = db.searchPlaylists(con, json_data, user_id)
+        playlists = db.searchPlaylists(json_data, user_id)
 
         resp_dict = {'list': []}
         for i in range(0, len(playlists)):
@@ -451,7 +451,7 @@ def searchPlaylist():
 @application.route("/singleLyrics",methods=['POST', 'OPTIONS'])
 def singleLyrics():
     try:
-        db.validate_user(con, request)
+        db.validate_user(request)
         print (request)
         json_data = request.get_json()
         print (json_data)
@@ -463,7 +463,7 @@ def singleLyrics():
         if not 'track_id' in json_data['filters']:
             raise Exception("track_id not in json")
 
-        lyrics = db.singleLyrics(con, json_data)
+        lyrics = db.singleLyrics(json_data)
 
         resp_dict = {'lyrics' : lyrics[0]['lyrics']}
 
@@ -515,11 +515,7 @@ def serve_static_styles(filename):
 # The main, takes the config from the config file and connects to the mysql server
 # Then runs the server
 if __name__ == "__main__":
-    # Connect to mysql before even running the server
-    con = mdb.connect(CONFIG['mysql']['host'], CONFIG['mysql']['user'], CONFIG['mysql']['pass'])
-    with con:
-        cur = con.cursor(mdb.cursors.DictCursor)
-        cur.execute('USE {}'.format(CONFIG['mysql']['database']))
+
 
     application.run(host=CONFIG['webserver']['ip'], port=CONFIG['webserver']['port'])
 
