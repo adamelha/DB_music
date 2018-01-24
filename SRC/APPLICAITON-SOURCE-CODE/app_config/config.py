@@ -9,7 +9,7 @@ CONFIG = {
         }
     },
     "webserver": {
-        "ip": "0.0.0.0",
+        "ip": "delta-tomcat-vm",
         "port": 4000
     }
 }
