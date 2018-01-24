@@ -100,16 +100,15 @@ def signUp(con, userName, password):
 def getTrackList(con, json_data, user_id, track_name, artist_name, album_name, only_if_has_lyrics, order_field_mapping):
 
     # Check wheather displaying a playlist or not
-    if 'playlist_name' in json_data:
-
+    if 'filters' in json_data and 'playlist_name' in json_data['filters']:
         sql_cmd = '''
-                        SELECT PlaylistTracks.track_id, PlaylistTracks.track_name AS track_name, album_name, artist_name
+                        SELECT PlaylistTracks.track_id AS track_id, PlaylistTracks.track_name AS track_name, album_name, artist_name
                         FROM Artists, Albums, (SELECT Tracks.*
                                                 FROM Playlists, Tracks
                                                 WHERE user_id = {} and playlist_name = "{}" and Playlists.track_id = Tracks.track_id) AS PlaylistTracks
                         WHERE {}{}{}{}PlaylistTracks.artist_id = Artists.artist_id and PlaylistTracks.album_id = Albums.album_id
                         ORDER BY {} {}
-                        '''.format(user_id, json_data['playlist_name'], track_name, artist_name, album_name,
+                        '''.format(user_id, json_data['filters']['playlist_name'], track_name, artist_name, album_name,
                                    only_if_has_lyrics, order_field_mapping[json_data['field']], json_data['order'])
     else:
         sql_cmd = '''
@@ -119,6 +118,13 @@ def getTrackList(con, json_data, user_id, track_name, artist_name, album_name, o
                         ORDER BY {} {}
                         '''.format(track_name, artist_name, album_name, only_if_has_lyrics,
                                    order_field_mapping[json_data['field']], json_data['order'])
+    print('before filters')
+    if 'filters' in json_data and 'lyrics' in json_data['filters']:
+        sql_cmd = '''
+                SELECT *
+                FROM Lyrics, ( {} ) AS x
+                WHERE lyrics.track_id = x.track_id AND MATCH(lyrics) AGAINST ('+{}*' in boolean mode)
+                '''.format(sql_cmd, json_data['filters']['lyrics'].replace(' ', ' *'))
 
     tracks = execute_sql_command_fetch_all(con, sql_cmd)
     return tracks
@@ -191,13 +197,21 @@ def getPlaylists(con, user_id, order_field_mapping, json_data):
 
     return playlists
 
-def searchPlaylists(con, json_data):
+def searchPlaylists(con, json_data, user_id):
     sql_cmd = '''
                 SELECT DISTINCT playlist_name FROM Playlists
-                WHERE playlist_name LIKE "{}%"
-            '''.format(json_data['search'])
+                WHERE playlist_name LIKE "{}%" and user_id = {}
+            '''.format(json_data['search'], user_id)
 
     playlists = execute_sql_command_fetch_all(con, sql_cmd)
-    print 'yes'
     return playlists
 
+def singleLyrics(con, json_data):
+    sql_cmd = '''
+                SELECT lyrics
+                FROM Lyrics
+                WHERE track_id = "{}"
+            '''.format(json_data['filters']['track_id'])
+
+    lyrics = execute_sql_command_fetch_all(con, sql_cmd)
+    return lyrics

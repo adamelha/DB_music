@@ -119,13 +119,14 @@
 	'password' : '<password>',
 	'entries_per_page' : <int: How many song entries you wish receive>,
 	'page_index' : <int: the page number you wish to receive>
-	'playlist_name' : '<name of a playlist belonging to the user>',
+	'lyrics' : '<lyrics user wishes to search by>'
 	'order' : '<"desc" or "asc" for descending or ascending order>',
 	'field' : '<The field of which the data will be sorted>',
 	'filters' : {
 				'name' : '<song name>',
 				'album' : '<album name>',
 				'artist' : '<artist name>'
+				'playlist_name' : '<name of a playlist belonging to the user>'
 			  }
    }
    ```
@@ -208,9 +209,8 @@
 	```
 * **Error Response:**
 
-  * **Code:** 401 UNAUTHORIZED <br />
-  *	**Content:** `{ error : "User and password do not match an existing user" }`
-	
+  * **Code:** 500 INTERNAL ERROR <br />
+  * **Content:** `{ error : "<An informative error string>" }`	
 ## Get Albums Table
 ----
   Returns the table of all the albums depending on a filter and number of pages to display.
@@ -269,8 +269,8 @@
 	```
 * **Error Response:**
 
-  * **Code:** 401 UNAUTHORIZED <br />
-  *	**Content:** `{ error : "User and password do not match an existing user" }`
+  * **Code:** 500 INTERNAL ERROR <br />
+  *	**Content:** `{ error : "<An informative error string>" }`
  
  
 ## Search (Autocorrect) for Playlist
@@ -311,17 +311,17 @@
 	```javascript
 	{
 		'list' : [
-					{'playlist_id': <int: id>, 'playlist_name': '<playlist name that the search param in the response is a substring of>'},
-					{'playlist_id': <int: id>, 'playlist_name': '<playlist name that the search param in the response is a substring of>'},
-					{'playlist_id': <int: id>, 'playlist_name': '<playlist name that the search param in the response is a substring of>'}
+					{'name': '<playlist name that the search param in the response is a substring of>'},
+					{'name': '<playlist name that the search param in the response is a substring of>'},
+					{'name': '<playlist name that the search param in the response is a substring of>'},
 					...
 				],
 	}
 	```
 * **Error Response:**
 
-  * **Code:** 401 UNAUTHORIZED <br />
-  *	**Content:** `{ error : "User and password do not match an existing user" }`
+  * **Code:** 500 INTERNAL ERROR <br />
+  *	**Content:** `{ error : "<An informative error string>" }`
 
 
 ## Add Song to New or Existing Playlist
@@ -361,8 +361,8 @@
   * **Code:** 200 OK <br />
 * **Error Response:**
 
-  * **Code:** 401 UNAUTHORIZED <br />
-  *	**Content:** `{ error : "User and password do not match an existing user" }`
+  * **Code:** 500 INTERNAL ERROR <br />
+  *	**Content:** `{ error : "<An informative error string>" }`
 
 
 ## Remove Song from Playlist
@@ -403,8 +403,8 @@
   
 * **Error Response:**
 
-  * **Code:** 401 UNAUTHORIZED <br />
-  *	**Content:** `{ error : "User and password do not match an existing user" }`
+  * **Code:** 500 INTERNAL ERROR <br />
+  *	**Content:** `{ error : "<An informative error string>" }`
 
   
 ## Remove Playlist
@@ -443,8 +443,8 @@
   
 * **Error Response:**
 
-  * **Code:** 401 UNAUTHORIZED <br />
-  *	**Content:** `{ error : "User and password do not match an existing user" }`
+  * **Code:** 500 INTERNAL ERROR <br />
+  *	**Content:** `{ error : "<An informative error string>" }`
 
 
 ## Get User Playlists
@@ -499,6 +499,51 @@
 	```
 * **Error Response:**
 
-  * **Code:** 401 UNAUTHORIZED <br />
-	**Content:** `{ error : "User and password do not match an existing user" }`
+  * **Code:** 500 INTERNAL ERROR <br />
+  *	**Content:** `{ error : "<An informative error string>" }`
+
+## Get Lyrics of Specific Song
+----
+  This is called when the user wishes to view the lyrics of a single song. Returns a JSON with the lyrics string (check out return code).
+
+ * **URL**
+
+  /singleLyrics
+
+* **Method:**
+
+  `POST`
+
+* **HTTP Headers**
+	
+	None
+	
+*  **URL Params**
+	
+	None
+   
+* **Data Params**
+
+   ```javascript
+   {
+    'username' : '<username>',
+	'password' : '<password>',
+	'filters' : {'track_id' : <int: track_id of the song from the songs page>}
+   }
+   ```
+
+* **Success Response:**
+
+  * **Code:** 200 OK <br />
+  *  **Content:**
+	```javascript
+	{
+		'lyrics' : '<The lyrics to the song with >'
+	}
+	```
+* **Error Response:**
+
+  * **Code:** 500 INTERNAL ERROR <br />
+  *	**Content:** `{ error : "<An informative error string>" }`
+
 

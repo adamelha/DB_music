@@ -163,23 +163,8 @@ def populate_lyrics_table():
         return
 
 def populate_playlists_table():
-
-    with con:
-        cur = con.cursor(mdb.cursors.DictCursor)
-
-        # Create Albums table
-        sql_cmd = '''CREATE TABLE Playlists
-                    (
-                    user_id int NOT NULL,
-                    playlist_name varchar(200) NOT NULL,
-                    track_id int NOT NULL,
-                    FOREIGN KEY (user_id) REFERENCES Users(user_id)
-                    )
-                    '''
-        cur.execute(sql_cmd)
-
-        # index the (user_id, playlist_name) colomns to implement efficient search of playlists
-        cur.execute("CREATE INDEX Playlist ON Playlists(user_id, playlist_name)")
+    # No population at start - users must create their own
+    pass
 
 
 if __name__ == '__main__':

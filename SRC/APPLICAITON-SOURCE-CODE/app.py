@@ -37,6 +37,7 @@ def signUp():
         if isinstance(e, db.UserExistsException):
             return Response(json.dumps({'error': "User already exists"}), status=409)
         else:
+            print (str(e))
             return Response(json.dumps({'error': str(e)}), status=500)
 
     return Response(status=200 )
@@ -55,6 +56,7 @@ def login():
         if isinstance(e, db.UserNotExistException):
             return Response(json.dumps({'error': str(e)}), status=401)
         else:
+            print (str(e))
             return Response(json.dumps({'error': str(e)}), status=500)
 
     return Response(status=200)
@@ -121,7 +123,7 @@ def getTrackList():
         tracks = db.getTrackList(con, json_data, user_id, track_name, artist_name, album_name, only_if_has_lyrics, order_field_mapping)
 
         resp_dict = { 'list' : [], 'total_rows' : len(tracks)}
-        print('offset is '.format(offset))
+
         for i in range(offset, offset + entries_per_page):
             if i >= len(tracks):
                 break
@@ -139,8 +141,8 @@ def getTrackList():
         print(resp_dict)
 
     except Exception as e:
-        print repr(e)
-        return Response(json.dumps({'error': repr(e)}), status=401)
+        print str(e)
+        return Response(json.dumps({'error': repr(e)}), status=500)
 
     return Response(json.dumps(resp_dict, ensure_ascii=False), status=200)
 
@@ -214,7 +216,8 @@ def getAlbumsList():
         print(resp_dict)
         print('yes')
     except Exception as e:
-        return Response(json.dumps({'error': repr(e)}), status=401)
+        print (str(e))
+        return Response(json.dumps({'error': repr(e)}), status=500)
     print('before return')
     return Response(json.dumps(resp_dict, ensure_ascii=False), status=200)
 
@@ -291,7 +294,8 @@ def getArtistsList():
         print(resp_dict)
 
     except Exception as e:
-        return Response(json.dumps({'error': str(e)}), status=401)
+        print (str(e))
+        return Response(json.dumps({'error': str(e)}), status=500)
 
     return Response(json.dumps(resp_dict, ensure_ascii=False), status=200)
 
@@ -311,7 +315,8 @@ def addToPlaylist():
         db.addToPlaylist(con, json_data, user_id)
 
     except Exception as e:
-        return Response(json.dumps({'error': str(e)}), status=401)
+        print (str(e))
+        return Response(json.dumps({'error': str(e)}), status=500)
 
     return Response(status=200)
 
@@ -331,7 +336,8 @@ def removeFromPlaylist():
         db.removeFromPlaylist(con, json_data, user_id)
 
     except Exception as e:
-        return Response(json.dumps({'error': str(e)}), status=401)
+        print (str(e))
+        return Response(json.dumps({'error': str(e)}), status=500)
 
     return Response(status=200)
 
@@ -351,7 +357,8 @@ def removePlaylist():
 
 
     except Exception as e:
-        return Response(json.dumps({'error': str(e)}), status=401)
+        print (str(e))
+        return Response(json.dumps({'error': str(e)}), status=500)
 
     return Response(status=200)
 
@@ -367,17 +374,27 @@ def getPlaylists():
         json_data = request.get_json()
         print (json_data)
 
+        if not 'field' in json_data:
+            json_data['field'] = 'name'
+        if not 'order' in json_data:
+            json_data['order'] = 'asc'
+
+        print (request)
+        json_data = request.get_json()
+        print (json_data)
+
         entries_per_page = json_data['entries_per_page']
         page_index = json_data['page_index']
 
         if entries_per_page is None or not isinstance(entries_per_page, int) \
                 or page_index is None or not isinstance(page_index, int):
             raise Exception("Bad entries_per_page or page_index")
-
+        page_index -= 1
         offset = page_index * entries_per_page
 
+        print('before')
         playlists = db.getPlaylists(con, user_id, order_field_mapping, json_data)
-
+        print('after')
         resp_dict = {'list': [], 'total_rows': len(playlists)}
         for i in range(offset, offset + entries_per_page):
             if i >= len(playlists):
@@ -393,14 +410,15 @@ def getPlaylists():
         print(resp_dict)
 
     except Exception as e:
-        return Response(json.dumps({'error': str(e)}), status=401)
+        print (str(e))
+        return Response(json.dumps({'error': str(e)}), status=500)
 
-    return Response(json.dumps(resp_dict), status=200)
+    return Response(json.dumps(resp_dict, ensure_ascii=False), status=200)
 
 @application.route("/searchPlaylist",methods=['POST', 'OPTIONS'])
 def searchPlaylist():
     try:
-        order_field_mapping = {'name': 'artist_name', 'number_of_songs': 'artist_track_count'}
+        user_id = db.validate_user(con, request)
         print (request)
         json_data = request.get_json()
         print (json_data)
@@ -409,14 +427,14 @@ def searchPlaylist():
         if (not 'search' in json_data):
             raise Exception("search not in json")
 
-        playlists = db.searchPlaylists(con, json_data)
+        playlists = db.searchPlaylists(con, json_data, user_id)
 
         resp_dict = {'list': []}
         for i in range(0, len(playlists)):
             if i >= len(playlists):
                 break
 
-            dict = { 'playlist_name' : playlists[i]['playlist_name']
+            dict = { 'name' : playlists[i]['playlist_name']
                     }
             # Append entry to response
             resp_dict['list'].append(dict)
@@ -425,10 +443,38 @@ def searchPlaylist():
         print(resp_dict)
 
     except Exception as e:
-        return Response(json.dumps({'error': str(e)}), status=401)
+        print (str(e))
+        return Response(json.dumps({'error': str(e)}), status=500)
 
     return Response(json.dumps(resp_dict, ensure_ascii=False), status=200)
 
+@application.route("/singleLyrics",methods=['POST', 'OPTIONS'])
+def singleLyrics():
+    try:
+        db.validate_user(con, request)
+        print (request)
+        json_data = request.get_json()
+        print (json_data)
+
+        # Make sure filters['track_id'] is a key in the JSON
+        if not 'filters' in json_data:
+            raise Exception("filters not in json")
+
+        if not 'track_id' in json_data['filters']:
+            raise Exception("track_id not in json")
+
+        lyrics = db.singleLyrics(con, json_data)
+
+        resp_dict = {'lyrics' : lyrics[0]['lyrics']}
+
+        print('Returning the following list')
+        print(resp_dict)
+
+    except Exception as e:
+        print (str(e))
+        return Response(json.dumps({'error': str(e)}), status=500)
+
+    return Response(json.dumps(resp_dict, ensure_ascii=False), status=200)
 
 
 # This is the main route

@@ -1,20 +1,17 @@
 -- Use our database
-
+drop database dbmysql23
+create database dbmysql23
 -- Create users table
 CREATE TABLE IF NOT EXISTS Users
 (
 user_id int NOT NULL AUTO_INCREMENT,
 user_name varchar(20) NOT NULL,
 user_password varchar(20) NOT NULL,
-PRIMARY KEY (user_id),
-UNIQUE (user_name)
+PRIMARY KEY (user_id)
 );
 
 -- index the user id colomn to implement efficient search of users
---CREATE UNIQUE INDEX userId ON Users(user_id);
-
--- index the user name colomn to implement efficient search of users (used to find playlists)
---CREATE UNIQUE INDEX userName ON Users(user_name);
+CREATE UNIQUE INDEX userId ON Users(user_id);
 
 
 -- Create Artists table
