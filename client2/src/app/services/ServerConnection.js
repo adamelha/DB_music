@@ -10,7 +10,7 @@
             var connection =
                 {
                     isLoading: false,
-                    serverUrl: 'http://localhost:4000',//TODO add port
+                    serverUrl: 'http://delta-tomcat-vm.cs.tau.ac.il:40171',//TODO add port
 
                     dataToUrl: function (data) {
                         let andUri = "?";
